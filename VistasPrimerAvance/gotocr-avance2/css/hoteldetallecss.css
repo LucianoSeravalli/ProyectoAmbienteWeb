@@ -1,0 +1,63 @@
+/* hoteldetallecss.css — vista Detalle de hotel */
+
+.gcr-gallery{ padding-top: 1.5rem; }
+.gcr-gallery-grid{
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 140px 140px;
+  gap: .6rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.gcr-gallery-grid img{ width: 100%; height: 100%; object-fit: cover; }
+.gcr-gallery-main{ grid-row: span 2; height: 100%; }
+
+.gcr-rating{ color: var(--amber); font-weight: 800; }
+.gcr-rating-lg{ font-size: 1.05rem; }
+.gcr-rating-lg small{ color: var(--gray-500); font-weight: 500; }
+
+.gcr-amenity{
+  background: var(--sand);
+  border-radius: var(--radius-sm);
+  padding: .6rem .8rem;
+  font-size: .88rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.gcr-amenity i{ color: var(--green-dark); }
+
+.gcr-room-card{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.gcr-room-card img{ width: 100%; height: 100%; min-height: 110px; object-fit: cover; }
+.gcr-badge-tipo{
+  background: rgba(47,182,196,.14);
+  color: var(--teal);
+  font-weight: 700;
+  border: 1px solid rgba(47,182,196,.35);
+}
+.gcr-price{ font-weight: 800; color: var(--navy); }
+.gcr-price small{ font-weight: 500; color: var(--gray-500); }
+
+.gcr-review{
+  background: var(--sand);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+}
+
+.gcr-booking-summary{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.6rem;
+  position: sticky;
+  top: 96px;
+}
+
+@media (max-width: 767px){
+  .gcr-gallery-grid{ grid-template-columns: 1fr 1fr; grid-template-rows: 120px 120px 120px; }
+  .gcr-gallery-main{ grid-column: span 2; grid-row: span 1; height: 200px; }
+}

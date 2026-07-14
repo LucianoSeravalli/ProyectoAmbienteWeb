@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservar · GoToCR</title>
+  <meta name="description" content="Completa tu reserva de hospedaje en GoToCR.">
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/globalcss.css" rel="stylesheet">
+  <link href="css/reservacss.css" rel="stylesheet">
+</head>
+<body>
+  <header class="gcr-header">
+    <div class="container-xl">
+      <a href="index.html" class="gcr-brand">
+        <img src="img/logo.png" alt="Logotipo de GoToCR">
+      </a>
+      <nav class="gcr-nav" id="gcrNav">
+          <a href="index.html">Inicio</a>
+          <a href="hoteles.html">Hoteles</a>
+          <a href="perfil.html">Mi perfil</a>
+          <a href="historial.html">Mis reservas</a>
+      </nav>
+      <div class="gcr-actions">
+        <a href="login.html" class="btn-gotocr btn-gotocr-outline btn-sm">Iniciar sesión</a>
+        <a href="registro.html" class="btn-gotocr btn-gotocr-primary btn-sm d-none d-sm-inline-flex">Registrarse</a>
+        <button class="gcr-toggle" id="gcrToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="gcrNav">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+  <section class="gcr-page-hero py-4">
+    <div class="container-xl">
+      <span class="gcr-badge" style="background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.4)"><i class="bi bi-calendar-check"></i> Paso final</span>
+      <h1 class="mt-3 mb-0">Confirmá tu reserva</h1>
+    </div>
+  </section>
+
+  <!-- PASOS -->
+  <div class="container-xl">
+    <div class="gcr-steps">
+      <div class="gcr-step done"><span>1</span> Elegí tu cuarto</div>
+      <div class="gcr-step active"><span>2</span> Datos y pago</div>
+      <div class="gcr-step"><span>3</span> Confirmación</div>
+    </div>
+  </div>
+
+  <section class="pb-5 pt-3">
+    <div class="container-xl">
+      <div class="row g-5">
+        <div class="col-lg-7">
+          <form>
+            <div class="gcr-form-card mb-4">
+              <h3 class="h6 mb-3"><i class="bi bi-person"></i> Datos del huésped</h3>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Nombre</label>
+                  <input type="text" class="form-control" placeholder="Mariana" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Apellido</label>
+                  <input type="text" class="form-control" placeholder="Ureña Solano" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Correo electrónico</label>
+                  <input type="email" class="form-control" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Teléfono</label>
+                  <input type="tel" class="form-control" placeholder="8888-8888" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Solicitudes especiales (opcional)</label>
+                  <textarea class="form-control" rows="2" placeholder="Ej. cuarto en piso alto, cuna para bebé, etc."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="gcr-form-card mb-4">
+              <h3 class="h6 mb-3"><i class="bi bi-credit-card"></i> Método de pago</h3>
+
+              <div class="gcr-pay-option mb-2">
+                <input class="form-check-input" type="radio" name="metodoPago" id="payTarjeta" checked>
+                <label for="payTarjeta">
+                  <i class="bi bi-credit-card-2-front"></i> Tarjeta de crédito o débito
+                </label>
+              </div>
+              <div class="gcr-pay-option mb-2">
+                <input class="form-check-input" type="radio" name="metodoPago" id="paySinpe">
+                <label for="paySinpe">
+                  <i class="bi bi-phone"></i> SINPE Móvil
+                </label>
+              </div>
+              <div class="gcr-pay-option mb-3">
+                <input class="form-check-input" type="radio" name="metodoPago" id="payEfectivo">
+                <label for="payEfectivo">
+                  <i class="bi bi-cash-coin"></i> Efectivo al llegar al hotel
+                </label>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label small fw-bold">Número de tarjeta</label>
+                  <input type="text" class="form-control" placeholder="0000 0000 0000 0000">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">Vencimiento</label>
+                  <input type="text" class="form-control" placeholder="MM/AA">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold">CVV</label>
+                  <input type="text" class="form-control" placeholder="123">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="aceptaTerminos" required>
+              <label class="form-check-label small" for="aceptaTerminos">
+                Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de cancelación</a> de GoToCR.
+              </label>
+            </div>
+
+            <button type="submit" class="btn-gotocr btn-gotocr-primary w-100 justify-content-center">
+              Confirmar y pagar <i class="bi bi-check2-circle"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- RESUMEN -->
+        <div class="col-lg-5">
+          <div class="gcr-booking-summary">
+            <div class="d-flex gap-3 mb-3">
+              <img src="img/hotel-marriott.jpg" alt="Los Sueños Marriott" style="width:96px;height:72px;object-fit:cover;border-radius:10px">
+              <div>
+                <h3 class="h6 mb-1">Los Sueños Marriott Ocean &amp; Golf Resort</h3>
+                <p class="small text-muted mb-0"><i class="bi bi-geo-alt"></i> Herradura, Puntarenas</p>
+              </div>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between small mb-2">
+              <span>Cuarto</span><span>Junior suite con balcón</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-2">
+              <span>Entrada</span><span>12 ago 2026</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-2">
+              <span>Salida</span><span>15 ago 2026</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-2">
+              <span>Huéspedes</span><span>2 personas</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between small mb-2">
+              <span>$259 x 3 noches</span><span>$777</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-2">
+              <span>Impuestos y cargos</span><span>$93</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold fs-5 mb-0">
+              <span>Total</span><span>$870</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="gcr-footer">
+    <div class="container-xl">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6">
+          <a href="index.html" class="gcr-brand mb-3 d-inline-flex">
+            <img src="img/logo.png" alt="GoToCR" style="height:280px">
+          </a>
+          <p class="tagline">Plataforma web que centraliza hospedaje, transporte, tours y puntos de interés turístico de Costa Rica en un solo lugar, para que planificar tu viaje sea así de fácil.</p>
+          <div class="gcr-social">
+            <a href="#" aria-label="Facebook de GoToCR"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Instagram de GoToCR"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="WhatsApp de GoToCR"><i class="bi bi-whatsapp"></i></a>
+            <a href="#" aria-label="TikTok de GoToCR"><i class="bi bi-tiktok"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <h6>Explorar</h6>
+          <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="hoteles.html">Hoteles</a></li>
+            <li><a href="reserva.html">Reservar</a></li>
+            <li><a href="historial.html">Mis reservas</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <h6>Cuenta</h6>
+          <ul>
+            <li><a href="login.html">Iniciar sesión</a></li>
+            <li><a href="registro.html">Crear cuenta</a></li>
+            <li><a href="perfil.html">Mi perfil</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <h6>Contacto</h6>
+          <div class="contact-item"><i class="bi bi-envelope-fill"></i><span>gotocr@gmail.com</span></div>
+          <div class="contact-item"><i class="bi bi-telephone-fill"></i><span>8888-8888</span></div>
+          <div class="contact-item"><i class="bi bi-whatsapp"></i><span>+506 7070-7070 (WhatsApp)</span></div>
+          <div class="contact-item"><i class="bi bi-geo-alt-fill"></i><span>Avenida Central, Edificio Toucan, piso 3, San José, Costa Rica</span></div>
+          <div class="contact-item"><i class="bi bi-clock-fill"></i><span>Lunes a domingo — 6:00 a.m. a 10:00 p.m.</span></div>
+        </div>
+      </div>
+      <div class="gcr-footer-bottom">
+        <span>© 2026 GoToCR. Todos los derechos reservados.</span>
+        <span><a href="#">Términos y condiciones</a> &middot; <a href="#">Política de privacidad</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const gcrToggle = document.getElementById('gcrToggle');
+    const gcrNav = document.getElementById('gcrNav');
+    if (gcrToggle) {
+      gcrToggle.addEventListener('click', () => {
+        const isOpen = gcrNav.classList.toggle('open');
+        gcrToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+  </script>
+
+</body>
+</html>
