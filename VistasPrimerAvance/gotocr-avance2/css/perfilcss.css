@@ -1,0 +1,48 @@
+/* perfilcss.css — vista Mi perfil */
+
+.gcr-account-card{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1.2rem;
+}
+
+.gcr-avatar-wrap{ position: relative; width: 96px; margin: 0 auto; }
+.gcr-avatar{
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--sand);
+}
+.gcr-avatar-edit{
+  position: absolute; bottom: 0; right: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--white);
+  border: 2px solid var(--white);
+  font-size: .8rem;
+}
+
+.gcr-account-nav .list-group-item{
+  border: none;
+  border-radius: var(--radius) !important;
+  margin-bottom: .35rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex; align-items: center; gap: .6rem;
+}
+.gcr-account-nav .list-group-item i{ width: 18px; color: var(--gray-500); }
+.gcr-account-nav .list-group-item.active{
+  background: rgba(22,163,74,.1);
+  color: var(--green-dark);
+}
+.gcr-account-nav .list-group-item.active i{ color: var(--green-dark); }
+.gcr-account-nav .list-group-item.text-danger i{ color: var(--gray-500); }
+
+.gcr-form-card{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem;
+}

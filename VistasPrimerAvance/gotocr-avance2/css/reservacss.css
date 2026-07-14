@@ -1,0 +1,53 @@
+/* reservacss.css — vista Reserva (checkout) */
+
+.gcr-steps{
+  display: flex;
+  gap: 1.2rem;
+  padding: 1.4rem 0 0;
+  flex-wrap: wrap;
+}
+.gcr-step{
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--gray-500);
+  display: flex; align-items: center; gap: .5rem;
+}
+.gcr-step span{
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  color: var(--gray-500);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem;
+}
+.gcr-step.active{ color: var(--navy); }
+.gcr-step.active span{ background: var(--navy); color: var(--white); }
+.gcr-step.done{ color: var(--green-dark); }
+.gcr-step.done span{ background: var(--green); color: var(--white); }
+
+.gcr-form-card{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem;
+}
+
+.gcr-pay-option{
+  display: flex; align-items: center; gap: .7rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: .8rem 1rem;
+}
+.gcr-pay-option label{ margin-bottom: 0; font-weight: 600; display: flex; align-items: center; gap: .5rem; }
+.gcr-pay-option i{ color: var(--teal); }
+
+.gcr-booking-summary{
+  background: var(--sand);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem;
+  position: sticky;
+  top: 96px;
+}
+
+.form-check-input:checked{ background-color: var(--green); border-color: var(--green); }

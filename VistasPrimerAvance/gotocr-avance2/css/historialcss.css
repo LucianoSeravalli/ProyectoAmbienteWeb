@@ -1,0 +1,57 @@
+/* historialcss.css — vista Mis reservas (historial) */
+
+.gcr-account-card{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1.2rem;
+}
+.gcr-avatar-wrap{ width: 88px; margin: 0 auto; }
+.gcr-avatar{ width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid var(--sand); }
+
+.gcr-account-nav .list-group-item{
+  border: none;
+  border-radius: var(--radius) !important;
+  margin-bottom: .35rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex; align-items: center; gap: .6rem;
+}
+.gcr-account-nav .list-group-item i{ width: 18px; color: var(--gray-500); }
+.gcr-account-nav .list-group-item.active{ background: rgba(22,163,74,.1); color: var(--green-dark); }
+.gcr-account-nav .list-group-item.active i{ color: var(--green-dark); }
+
+.gcr-tabs .nav-link{
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .88rem;
+  color: var(--navy);
+  padding: .5rem 1.1rem;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  margin-right: .5rem;
+}
+.gcr-tabs .nav-link.active{ background: var(--navy); color: var(--white); border-color: var(--navy); }
+
+.gcr-reservation-card{
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  gap: 1.1rem;
+  align-items: center;
+}
+.gcr-reservation-card img{
+  width: 110px; height: 88px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+.gcr-reservation-card.is-cancelled{ opacity: .7; }
+.gcr-price{ font-weight: 800; color: var(--navy); }
+
+@media (max-width: 575px){
+  .gcr-reservation-card{ flex-wrap: wrap; }
+  .gcr-reservation-card img{ width: 100%; height: 140px; }
+}

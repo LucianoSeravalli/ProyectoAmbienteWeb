@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio · GoToCR</title>
+  <meta name="description" content="GoToCR: hospedaje, transporte y tours en Costa Rica desde una sola plataforma.">
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/globalcss.css" rel="stylesheet">
+  <link href="css/indexcss.css" rel="stylesheet">
+</head>
+
+
+
+
+
+
+<!--========================================= BODY ==========================================-->
+<body>
+  <!--========================================= HEADER GLOBAL ==========================================-->
+  <header class="gcr-header">
+    <div class="container-xl">
+      <a href="index.html" class="gcr-brand">
+        <img src="img/logo.png" alt="Logotipo de GoToCR">
+      </a>
+      <nav class="gcr-nav" id="gcrNav">
+          <a href="index.html" class="active">Inicio</a>
+          <a href="hoteles.html">Hoteles</a>
+          <a href="perfil.html">Mi perfil</a>
+          <a href="historial.html">Mis reservas</a>
+      </nav>
+      <div class="gcr-actions">
+        <a href="login.html" class="btn-gotocr btn-gotocr-outline btn-sm">Iniciar sesión</a>
+        <a href="registro.html" class="btn-gotocr btn-gotocr-primary btn-sm d-none d-sm-inline-flex">Registrarse</a>
+        <button class="gcr-toggle" id="gcrToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="gcrNav">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+
+
+
+
+  <!-- ================================================ HERO + CARRUSEL -->
+  <section class="gcr-hero">
+    <div id="heroCarousel" class="carousel slide gcr-carousel" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+      </div>
+
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="img/hotel-marriott.jpg" class="d-block w-100" alt="Piscinas frente al mar del Los Sueños Marriott Ocean &amp; Golf Resort, Herradura">
+          <div class="carousel-caption-custom">
+            <span class="gcr-badge"><i class="bi bi-stars"></i> Destino destacado</span>
+            <h1>Costa Rica, toda en un solo lugar</h1>
+            <p>Hospedaje, transporte, tours y presupuesto de viaje, organizados en una sola plataforma.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+              <a href="hoteles.html" class="btn-gotocr btn-gotocr-primary">Explorar hoteles <i class="bi bi-arrow-right"></i></a>
+              <a href="registro.html" class="btn-gotocr btn-gotocr-ghost">Crear cuenta gratis</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="img/hotel-punta-islita.jpg" class="d-block w-100" alt="Piscina infinita con vista al océano en Hotel Punta Islita, Guanacaste">
+          <div class="carousel-caption-custom">
+            <span class="gcr-badge"><i class="bi bi-stars"></i> Guanacaste</span>
+            <h1>Vistas que quitan el aliento</h1>
+            <p>Filtra hospedajes por zona, tipo de cuarto y presupuesto en segundos.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+              <a href="hoteles.html" class="btn-gotocr btn-gotocr-primary">Explorar hoteles <i class="bi bi-arrow-right"></i></a>
+              <a href="registro.html" class="btn-gotocr btn-gotocr-ghost">Crear cuenta gratis</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="img/hotel-westin-conchal.jpeg" class="d-block w-100" alt="Piscinas y jardines tropicales de The Westin Reserva Conchal, Guanacaste">
+          <div class="carousel-caption-custom">
+            <span class="gcr-badge"><i class="bi bi-stars"></i> Reserva Conchal</span>
+            <h1>Tu próximo viaje empieza aquí</h1>
+            <p>Reserva tu cuarto y guarda tu historial de viajes en un solo panel.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+              <a href="hoteles.html" class="btn-gotocr btn-gotocr-primary">Explorar hoteles <i class="bi bi-arrow-right"></i></a>
+              <a href="registro.html" class="btn-gotocr btn-gotocr-ghost">Crear cuenta gratis</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="gcr-carousel-arrow"><i class="bi bi-chevron-left"></i></span>
+        <span class="visually-hidden">Anterior</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="gcr-carousel-arrow"><i class="bi bi-chevron-right"></i></span>
+        <span class="visually-hidden">Siguiente</span>
+      </button>
+    </div>
+  </section>
+
+  <svg class="gcr-divider on-white" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,42 L100,20 L220,36 L340,12 L460,32 L580,8 L700,30 L820,16 L940,34 L1060,10 L1180,28 L1300,18 L1440,32 L1440,60 L0,60 Z"></path>
+  </svg>
+
+  <!-- MÓDULOS DE LA PLATAFORMA -->
+  <section class="py-5 bg-white">
+    <div class="container-xl">
+      <div class="gcr-section-title text-center mx-auto" style="max-width:640px">
+        <span class="eyebrow">Qué encontrás en GoToCR</span>
+        <h2>Todo tu viaje, organizado por módulos</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-3 col-sm-6">
+          <div class="gcr-feature-card">
+            <div class="gcr-feature-icon"><i class="bi bi-building"></i></div>
+            <h3>Hospedajes</h3>
+            <p>Compará hoteles, tipos de cuarto y disponibilidad en tiempo real.</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="gcr-feature-card">
+            <div class="gcr-feature-icon"><i class="bi bi-signpost-2"></i></div>
+            <h3>Destinos turísticos</h3>
+            <p>Descubrí puntos de interés y actividades recreativas por región.</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="gcr-feature-card">
+            <div class="gcr-feature-icon"><i class="bi bi-map"></i></div>
+            <h3>Itinerarios</h3>
+            <p>Organizá tu viaje día a día según tus propios intereses.</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="gcr-feature-card">
+            <div class="gcr-feature-icon"><i class="bi bi-wallet2"></i></div>
+            <h3>Presupuesto</h3>
+            <p>Estimá gastos de hospedaje y viaje antes de reservar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOTELES DESTACADOS -->
+  <section class="py-5" style="background: var(--sand);">
+    <div class="container-xl">
+      <div class="gcr-section-title">
+        <span class="eyebrow">Hoteles destacados</span>
+        <h2>Hospedajes con mejor calificación esta semana</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="gcr-card h-100">
+            <img src="img/hotel-marriott.jpg" class="gcr-card-img" alt="Los Sueños Marriott Ocean & Golf Resort">
+            <div class="p-4">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <h3 class="h5 mb-0">Los Sueños Marriott</h3>
+                <span class="gcr-rating"><i class="bi bi-star-fill"></i> 4.7</span>
+              </div>
+              <p class="text-muted small mb-3"><i class="bi bi-geo-alt"></i> Herradura, Puntarenas</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="gcr-price">Desde <strong>$189</strong>/noche</span>
+                <a href="hotel-detalle.html" class="btn-gotocr btn-gotocr-outline btn-sm">Ver hotel</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="gcr-card h-100">
+            <img src="img/hotel-punta-islita.jpg" class="gcr-card-img" alt="Hotel Punta Islita">
+            <div class="p-4">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <h3 class="h5 mb-0">Hotel Punta Islita</h3>
+                <span class="gcr-rating"><i class="bi bi-star-fill"></i> 4.9</span>
+              </div>
+              <p class="text-muted small mb-3"><i class="bi bi-geo-alt"></i> Nandayure, Guanacaste</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="gcr-price">Desde <strong>$245</strong>/noche</span>
+                <a href="hotel-detalle.html" class="btn-gotocr btn-gotocr-outline btn-sm">Ver hotel</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="gcr-card h-100">
+            <img src="img/hotel-westin-conchal.jpeg" class="gcr-card-img" alt="The Westin Reserva Conchal">
+            <div class="p-4">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <h3 class="h5 mb-0">The Westin Reserva Conchal</h3>
+                <span class="gcr-rating"><i class="bi bi-star-fill"></i> 4.6</span>
+              </div>
+              <p class="text-muted small mb-3"><i class="bi bi-geo-alt"></i> Santa Cruz, Guanacaste</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="gcr-price">Desde <strong>$210</strong>/noche</span>
+                <a href="hotel-detalle.html" class="btn-gotocr btn-gotocr-outline btn-sm">Ver hotel</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-5">
+        <a href="hoteles.html" class="btn-gotocr btn-gotocr-primary">Ver todos los hoteles <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="gcr-cta-band">
+    <div class="container-xl text-center">
+      <h2>Empezá a planificar tu viaje hoy</h2>
+      <p>Registrate gratis y guardá tus reservas, favoritos y presupuesto en un solo lugar.</p>
+      <a href="registro.html" class="btn-gotocr btn-gotocr-primary">Crear mi cuenta <i class="bi bi-person-plus"></i></a>
+    </div>
+  </section>
+
+  <footer class="gcr-footer">
+    <div class="container-xl">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6">
+          <a href="index.html" class="gcr-brand mb-3 d-inline-flex">
+            <img src="img/logo.png" alt="GoToCR" style="height:280px">
+          </a>
+          <p class="tagline">Plataforma web que centraliza hospedaje, transporte, tours y puntos de interés turístico de Costa Rica en un solo lugar, para que planificar tu viaje sea así de fácil.</p>
+          <div class="gcr-social">
+            <a href="#" aria-label="Facebook de GoToCR"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Instagram de GoToCR"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="WhatsApp de GoToCR"><i class="bi bi-whatsapp"></i></a>
+            <a href="#" aria-label="TikTok de GoToCR"><i class="bi bi-tiktok"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <h6>Explorar</h6>
+          <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="hoteles.html">Hoteles</a></li>
+            <li><a href="reserva.html">Reservar</a></li>
+            <li><a href="historial.html">Mis reservas</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <h6>Cuenta</h6>
+          <ul>
+            <li><a href="login.html">Iniciar sesión</a></li>
+            <li><a href="registro.html">Crear cuenta</a></li>
+            <li><a href="perfil.html">Mi perfil</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <h6>Contacto</h6>
+          <div class="contact-item"><i class="bi bi-envelope-fill"></i><span>gotocr@gmail.com</span></div>
+          <div class="contact-item"><i class="bi bi-telephone-fill"></i><span>8888-8888</span></div>
+          <div class="contact-item"><i class="bi bi-whatsapp"></i><span>+506 7070-7070 (WhatsApp)</span></div>
+          <div class="contact-item"><i class="bi bi-geo-alt-fill"></i><span>Avenida Central, Edificio Toucan, piso 3, San José, Costa Rica</span></div>
+          <div class="contact-item"><i class="bi bi-clock-fill"></i><span>Lunes a domingo — 6:00 a.m. a 10:00 p.m.</span></div>
+        </div>
+      </div>
+      <div class="gcr-footer-bottom">
+        <span>© 2026 GoToCR. Todos los derechos reservados.</span>
+        <span><a href="#">Términos y condiciones</a> &middot; <a href="#">Política de privacidad</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const gcrToggle = document.getElementById('gcrToggle');
+    const gcrNav = document.getElementById('gcrNav');
+    if (gcrToggle) {
+      gcrToggle.addEventListener('click', () => {
+        const isOpen = gcrNav.classList.toggle('open');
+        gcrToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+  </script>
+
+</body>
+</html>
