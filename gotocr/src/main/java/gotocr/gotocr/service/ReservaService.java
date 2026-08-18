@@ -1,12 +1,11 @@
-
 package gotocr.gotocr.service;
 
-
 import gotocr.gotocr.domain.Reserva;
+import gotocr.gotocr.repository.PagoRepository;
 import gotocr.gotocr.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +15,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReservaService {
 
+    private final PagoService pagoService;
+    private final PagoRepository pagoRepository;
     private final ReservaRepository reservaRepository;
 
     public List<Reserva> listarReservas() {
@@ -69,7 +70,8 @@ public class ReservaService {
         );
     }
 
-    public void insertarReserva(
+    @Transactional
+    public Integer insertarReserva(
             Integer idCliente,
             Integer idHotel,
             Integer idCuartoHotel,
@@ -77,13 +79,17 @@ public class ReservaService {
             LocalDate fechaSalida,
             Integer cantidadPersonas,
             BigDecimal precioTotal,
-            String estadoReserva) {
+            String estadoReserva,
+            String metodoPago) {
 
         validarId(idCliente);
         validarId(idHotel);
         validarId(idCuartoHotel);
 
-        validarFechas(fechaEntrada, fechaSalida);
+        validarFechas(
+                fechaEntrada,
+                fechaSalida
+        );
 
         validarNumeroPositivo(
                 cantidadPersonas,
@@ -100,16 +106,45 @@ public class ReservaService {
                 "El estado de la reserva es obligatorio"
         );
 
-        reservaRepository.insertarReserva(
-                idCliente,
-                idHotel,
-                idCuartoHotel,
-                fechaEntrada,
-                fechaSalida,
-                cantidadPersonas,
-                precioTotal,
-                estadoReserva.trim()
+        validarTexto(
+                metodoPago,
+                "El método de pago es obligatorio"
         );
+
+        Integer idReserva
+                = reservaRepository.insertarReserva(
+                        idCliente,
+                        idHotel,
+                        idCuartoHotel,
+                        fechaEntrada,
+                        fechaSalida,
+                        cantidadPersonas,
+                        precioTotal,
+                        estadoReserva.trim()
+                );
+
+        if (idReserva == null || idReserva <= 0) {
+            throw new IllegalStateException(
+                    "No fue posible obtener el ID de la reserva"
+            );
+        }
+
+        String estadoPago;
+
+        if (metodoPago.equalsIgnoreCase("EFECTIVO")) {
+            estadoPago = "PENDIENTE";
+        } else {
+            estadoPago = "PAGADO";
+        }
+
+        pagoService.insertarPago(
+                idReserva,
+                precioTotal,
+                metodoPago.trim().toUpperCase(),
+                estadoPago
+        );
+
+        return idReserva;
     }
 
     public void actualizarReserva(
@@ -229,10 +264,85 @@ public class ReservaService {
             BigDecimal precio,
             String mensaje) {
 
-        if (precio == null ||
-                precio.compareTo(BigDecimal.ZERO) < 0) {
+        if (precio == null
+                || precio.compareTo(BigDecimal.ZERO) < 0) {
 
             throw new IllegalArgumentException(mensaje);
         }
     }
+
+    @Transactional
+    public Integer confirmarReserva(
+            Integer idCliente,
+            Integer idHotel,
+            Integer idCuartoHotel,
+            LocalDate fechaEntrada,
+            LocalDate fechaSalida,
+            Integer cantidadPersonas,
+            BigDecimal precioTotal,
+            String metodoPago) {
+
+        validarId(idCliente);
+        validarId(idHotel);
+        validarId(idCuartoHotel);
+
+        validarFechas(
+                fechaEntrada,
+                fechaSalida
+        );
+
+        validarNumeroPositivo(
+                cantidadPersonas,
+                "La cantidad de personas debe ser mayor que cero"
+        );
+
+        validarPrecio(
+                precioTotal,
+                "El precio total debe ser válido"
+        );
+
+        validarTexto(
+                metodoPago,
+                "El método de pago es obligatorio"
+        );
+
+        // 1. Crear reserva
+        Integer idReserva
+                = reservaRepository.insertarReserva(
+                        idCliente,
+                        idHotel,
+                        idCuartoHotel,
+                        fechaEntrada,
+                        fechaSalida,
+                        cantidadPersonas,
+                        precioTotal,
+                        "CONFIRMADA"
+                );
+
+        if (idReserva == null || idReserva <= 0) {
+            throw new IllegalStateException(
+                    "No fue posible crear la reserva"
+            );
+        }
+
+        // 2. Determinar estado del pago
+        String estadoPago;
+
+        if (metodoPago.equalsIgnoreCase("EFECTIVO")) {
+            estadoPago = "PENDIENTE";
+        } else {
+            estadoPago = "PAGADO";
+        }
+
+        // 3. Registrar pago
+        pagoRepository.insertarPago(
+                idReserva,
+                precioTotal,
+                metodoPago.trim().toUpperCase(),
+                estadoPago
+        );
+
+        return idReserva;
+    }
+
 }

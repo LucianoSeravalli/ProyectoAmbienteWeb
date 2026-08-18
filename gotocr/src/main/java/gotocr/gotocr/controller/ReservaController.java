@@ -1,14 +1,13 @@
 package gotocr.gotocr.controller;
 
-
 import gotocr.gotocr.domain.Cliente;
 import gotocr.gotocr.domain.CuartoHotel;
 import gotocr.gotocr.service.ClienteService;
 import gotocr.gotocr.service.CuartoHotelService;
-import gotocr.gotocr.service.PagoService;
 import gotocr.gotocr.service.ReservaService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/reserva")
@@ -25,166 +26,272 @@ public class ReservaController {
     private final ReservaService reservaService;
     private final CuartoHotelService cuartoHotelService;
     private final ClienteService clienteService;
-    private final PagoService pagoService;
 
-    // ================================
-    // MOSTRAR PÁGINA DE RESERVA
-    // ================================
-
+    // =====================================================
+    // MOSTRAR VISTA
+    // =====================================================
     @GetMapping("/{idCuarto}")
     public String mostrarReserva(
             @PathVariable Integer idCuarto,
-            @RequestParam LocalDate fechaEntrada,
-            @RequestParam LocalDate fechaSalida,
-            @RequestParam Integer cantidadPersonas,
-            HttpSession session,
-            Model model) {
+            Model model,
+            HttpSession session) {
 
-        Integer idCliente =
-                (Integer) session.getAttribute(
-                        "idCliente"
-                );
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
             return "redirect:/login";
         }
 
-        CuartoHotel cuarto =
-                cuartoHotelService.buscarPorId(
-                        idCuarto
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "El cuarto seleccionado no existe"
-                        )
-                );
-
-        Cliente cliente =
-                clienteService.buscarPorId(
-                        idCliente
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Cliente no encontrado"
-                        )
-                );
-
-        long noches = ChronoUnit.DAYS.between(
-                fechaEntrada,
-                fechaSalida
+        model.addAttribute(
+                "idCuarto",
+                idCuarto
         );
-
-        BigDecimal subtotal =
-                cuarto.getPrecioNoche()
-                        .multiply(
-                                BigDecimal.valueOf(noches)
-                        );
-
-        model.addAttribute("cliente", cliente);
-        model.addAttribute("cuarto", cuarto);
-        model.addAttribute("hotel", cuarto.getHotel());
-        model.addAttribute("fechaEntrada", fechaEntrada);
-        model.addAttribute("fechaSalida", fechaSalida);
-        model.addAttribute("cantidadPersonas", cantidadPersonas);
-        model.addAttribute("cantidadNoches", noches);
-        model.addAttribute("precioTotal", subtotal);
 
         return "reserva";
     }
 
-    // ================================
-    // CONFIRMAR RESERVA
-    // ================================
+    // =====================================================
+    // DATOS PARA JAVASCRIPT
+    // =====================================================
+    @GetMapping("/datos/{idCuarto}")
+    @ResponseBody
+    public ResponseEntity<?> obtenerDatosReserva(
+            @PathVariable Integer idCuarto,
+            HttpSession session) {
 
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
+
+        if (idCliente == null) {
+            return ResponseEntity
+                    .status(401)
+                    .body(Map.of(
+                            "error",
+                            "Debe iniciar sesión"
+                    ));
+        }
+
+        try {
+
+            CuartoHotel cuarto
+                    = cuartoHotelService
+                            .buscarPorId(idCuarto)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cuarto no existe"
+                            )
+                            );
+
+            Cliente cliente
+                    = clienteService
+                            .buscarPorId(idCliente)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cliente no existe"
+                            )
+                            );
+
+            Map<String, Object> respuesta
+                    = new HashMap<>();
+
+            respuesta.put(
+                    "idCuartoHotel",
+                    cuarto.getIdCuartoHotel()
+            );
+
+            respuesta.put(
+                    "numeroCuarto",
+                    cuarto.getNumeroCuarto()
+            );
+
+            respuesta.put(
+                    "cantidadPersonas",
+                    cuarto.getCantidadPersonas()
+            );
+
+            respuesta.put(
+                    "precioNoche",
+                    cuarto.getPrecioNoche()
+            );
+
+            respuesta.put(
+                    "estado",
+                    cuarto.getEstado()
+            );
+
+            respuesta.put(
+                    "idHotel",
+                    cuarto.getHotel().getIdHotel()
+            );
+
+            respuesta.put(
+                    "nombreHotel",
+                    cuarto.getHotel().getNombre()
+            );
+
+            respuesta.put(
+                    "provincia",
+                    cuarto.getHotel().getProvincia()
+            );
+
+            respuesta.put(
+                    "canton",
+                    cuarto.getHotel().getCanton()
+            );
+
+            respuesta.put(
+                    "nombreCliente",
+                    cliente.getNombre()
+            );
+
+            respuesta.put(
+                    "apellidoCliente",
+                    cliente.getApellido()
+            );
+
+            respuesta.put(
+                    "correoCliente",
+                    cliente.getCorreo()
+            );
+
+            return ResponseEntity.ok(respuesta);
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "error",
+                            e.getMessage()
+                    ));
+        }
+    }
+
+    // =====================================================
+    // CONFIRMAR RESERVA DESDE JAVASCRIPT
+    // =====================================================
     @PostMapping("/confirmar")
-    public String confirmarReserva(
+    @ResponseBody
+    public ResponseEntity<?> confirmarReserva(
             @RequestParam Integer idCuartoHotel,
             @RequestParam LocalDate fechaEntrada,
             @RequestParam LocalDate fechaSalida,
             @RequestParam Integer cantidadPersonas,
             @RequestParam String metodoPago,
-            HttpSession session,
-            Model model) {
+            HttpSession session) {
 
-        Integer idCliente =
-                (Integer) session.getAttribute(
-                        "idCliente"
-                );
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
-            return "redirect:/login";
+
+            return ResponseEntity
+                    .status(401)
+                    .body(Map.of(
+                            "error",
+                            "Debe iniciar sesión"
+                    ));
         }
 
         try {
 
-            CuartoHotel cuarto =
-                    cuartoHotelService
+            CuartoHotel cuarto
+                    = cuartoHotelService
                             .buscarPorId(idCuartoHotel)
-                            .orElseThrow(() ->
-                                    new IllegalArgumentException(
-                                            "El cuarto seleccionado no existe"
-                                    )
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cuarto seleccionado no existe"
+                            )
                             );
 
-            if (!cuarto.getEstado()
-                    .equalsIgnoreCase("DISPONIBLE")) {
+            // =============================
+            // DISPONIBILIDAD
+            // =============================
+            if (!"DISPONIBLE".equalsIgnoreCase(
+                    cuarto.getEstado())) {
 
                 throw new IllegalArgumentException(
-                        "El cuarto seleccionado no está disponible"
+                        "El cuarto no se encuentra disponible"
                 );
             }
 
-            if (cantidadPersonas >
-                    cuarto.getCantidadPersonas()) {
+            // =============================
+            // CAPACIDAD
+            // =============================
+            if (cantidadPersonas
+                    > cuarto.getCantidadPersonas()) {
 
                 throw new IllegalArgumentException(
                         "La cantidad de huéspedes supera la capacidad del cuarto"
                 );
             }
 
-            long noches =
-                    ChronoUnit.DAYS.between(
+            // =============================
+            // FECHAS
+            // =============================
+            if (fechaEntrada == null
+                    || fechaSalida == null) {
+
+                throw new IllegalArgumentException(
+                        "Debe indicar las fechas de entrada y salida"
+                );
+            }
+
+            if (!fechaSalida.isAfter(fechaEntrada)) {
+
+                throw new IllegalArgumentException(
+                        "La fecha de salida debe ser posterior a la fecha de entrada"
+                );
+            }
+
+            long noches
+                    = ChronoUnit.DAYS.between(
                             fechaEntrada,
                             fechaSalida
                     );
 
-            BigDecimal precioTotal =
-                    cuarto.getPrecioNoche()
+            // =============================
+            // PRECIO REAL DESDE LA BD
+            // =============================
+            BigDecimal precioTotal
+                    = cuarto.getPrecioNoche()
                             .multiply(
-                                    BigDecimal.valueOf(
-                                            noches
-                                    )
+                                    BigDecimal.valueOf(noches)
                             );
 
-            reservaService.insertarReserva(
-                    idCliente,
-                    cuarto.getHotel().getIdHotel(),
-                    cuarto.getIdCuartoHotel(),
-                    fechaEntrada,
-                    fechaSalida,
-                    cantidadPersonas,
-                    precioTotal,
-                    "CONFIRMADA"
+            Integer idReserva
+                    = reservaService.confirmarReserva(
+                            idCliente,
+                            cuarto.getHotel().getIdHotel(),
+                            cuarto.getIdCuartoHotel(),
+                            fechaEntrada,
+                            fechaSalida,
+                            cantidadPersonas,
+                            precioTotal,
+                            metodoPago
+                    );
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "mensaje",
+                            "Reserva realizada correctamente",
+                            "idReserva",
+                            idReserva
+                    )
             );
 
-            /*
-             * Como nuestro SP actual de reserva
-             * no devuelve el idReserva generado,
-             * todavía no podemos insertar el pago
-             * aquí correctamente.
-             *
-             * Lo corregiremos haciendo que
-             * sp_insert_reserva devuelva LAST_INSERT_ID().
-             */
+        } catch (IllegalArgumentException
+                | IllegalStateException e) {
 
-            return "redirect:/historial?reservaExitosa";
-
-        } catch (IllegalArgumentException e) {
-
-            model.addAttribute(
-                    "error",
-                    e.getMessage()
-            );
-
-            return "reserva";
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            Map.of(
+                                    "error",
+                                    e.getMessage()
+                            )
+                    );
         }
     }
 }
