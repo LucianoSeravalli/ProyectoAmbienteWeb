@@ -1,9 +1,9 @@
-package gotocr.gotocr.controller;
+package com.gotocr.controller;
 
-import gotocr.gotocr.domain.Cliente;
-import gotocr.gotocr.domain.Rol;
-import gotocr.gotocr.service.ClienteService;
-import gotocr.gotocr.service.RolService;
+import com.gotocr.domain.Cliente;
+import com.gotocr.domain.Rol;
+import com.gotocr.service.ClienteService;
+import com.gotocr.service.RolService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

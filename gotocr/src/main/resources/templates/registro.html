@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Crear cuenta · GoToCR</title>
+<meta content="Crea tu cuenta gratuita en GoToCR." name="description"/>
+<link href="img/logo.png" rel="icon" type="image/png"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+<link href="/css/globalcss.css" rel="stylesheet"/>
+<link href="/css/registrocss.css" rel="stylesheet"/>
+</head>
+<body th:data-error="${error}">
+<header class="gcr-header">
+<div class="container-xl">
+<a class="gcr-brand" href="/">
+<img alt="Logotipo de GoToCR" src="/img/logo.png"/>
+</a>
+<nav class="gcr-nav" id="gcrNav">
+<a href="/">Inicio</a>
+<a href="/hoteles">Hoteles</a>
+<a href="/perfil">Mi perfil</a>
+<a href="/historial">Mis reservas</a>
+</nav>
+<div class="gcr-actions">
+<a class="btn-gotocr btn-gotocr-outline btn-sm" href="/login">Iniciar sesión</a>
+<a class="btn-gotocr btn-gotocr-primary btn-sm d-none d-sm-inline-flex" href="/registro">Registrarse</a>
+<button aria-controls="gcrNav" aria-expanded="false" aria-label="Abrir menú" class="gcr-toggle" id="gcrToggle">
+<i class="bi bi-list"></i>
+</button>
+</div>
+</div>
+</header>
+<section class="gcr-auth-section">
+<div class="container-xl">
+<div class="gcr-auth-wrapper gcr-auth-wrapper-reverse">
+<div class="gcr-auth-card">
+<span class="gcr-badge"><i class="bi bi-person-heart"></i> Nuevo por aquí</span>
+<h1 class="h3 mt-3 mb-1">Creá tu cuenta</h1>
+<p class="text-muted mb-4">Guardá tus reservas, favoritos y presupuesto de viaje en un solo lugar.</p>
+<div class="alert d-none mt-3" id="registroMensaje" role="alert"></div><form action="/registro" id="registroForm" method="post">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label small fw-bold">Nombre</label>
+<input class="form-control" id="nombre" name="nombre" placeholder="Escribe tu nombre" required="" type="text"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-bold">Apellido</label>
+<input class="form-control" id="apellido" name="apellido" placeholder="Escribe tu apellido" required="" type="text"/>
+</div>
+<div class="col-12">
+<label class="form-label small fw-bold">Correo electrónico</label>
+<input class="form-control" id="correo" name="correo" placeholder="correo@ejemplo.com" required="" type="email"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-bold">Contraseña</label>
+<input class="form-control" id="contrasena" name="contrasena" placeholder="••••••••" required="" type="password"/>
+</div>
+<div class="col-md-6">
+<label class="form-label small fw-bold">Confirmar contraseña</label>
+<input class="form-control" id="confirmarContrasena" name="confirmarContrasena" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<div class="form-check mt-3">
+<input class="form-check-input" id="terminosRegistro" name="terminosRegistro" required="" type="checkbox"/>
+<label class="form-check-label small" for="terminosRegistro">
+                Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a>.
+              </label>
+</div>
+<button class="btn-gotocr btn-gotocr-primary w-100 justify-content-center mt-4" type="submit">
+              Crear cuenta <i class="bi bi-person-check"></i>
+</button>
+</form>
+<p class="text-center small text-muted mt-4 mb-0">
+            Al registrarte te enviaremos un correo de confirmación a tu bandeja de entrada.
+          </p>
+<p class="text-center small text-muted mt-2 mb-0">
+            ¿Ya tenés cuenta? <a class="fw-bold" href="/login">Iniciá sesión</a>
+</p>
+</div>
+<div class="gcr-auth-art">
+<img alt="Jardines tropicales y piscinas de The Westin Reserva Conchal" src="/img/hotel-westin-conchal.jpeg"/>
+<div class="gcr-auth-art-text">
+<h2>Tu próximo destino te espera</h2>
+<p>Sumate a la comunidad que ya organiza sus viajes con GoToCR.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<footer class="gcr-footer">
+<div class="container-xl">
+<div class="row gy-4">
+<div class="col-lg-4 col-md-6">
+<a class="gcr-brand mb-3 d-inline-flex" href="/">
+<img alt="GoToCR" src="/img/logo.png" style="height:280px"/>
+</a>
+<p class="tagline">Plataforma web que centraliza hospedaje, transporte, tours y puntos de interés turístico de Costa Rica en un solo lugar, para que planificar tu viaje sea así de fácil.</p>
+<div class="gcr-social">
+<a aria-label="Facebook de GoToCR" href="#"><i class="bi bi-facebook"></i></a>
+<a aria-label="Instagram de GoToCR" href="#"><i class="bi bi-instagram"></i></a>
+<a aria-label="WhatsApp de GoToCR" href="#"><i class="bi bi-whatsapp"></i></a>
+<a aria-label="TikTok de GoToCR" href="#"><i class="bi bi-tiktok"></i></a>
+</div>
+</div>
+<div class="col-lg-2 col-md-6">
+<h6>Explorar</h6>
+<ul>
+<li><a href="/">Inicio</a></li>
+<li><a href="/hoteles">Hoteles</a></li>
+<li><a href="/hoteles">Reservar</a></li>
+<li><a href="/historial">Mis reservas</a></li>
+</ul>
+</div>
+<div class="col-lg-2 col-md-6">
+<h6>Cuenta</h6>
+<ul>
+<li><a href="/login">Iniciar sesión</a></li>
+<li><a href="/registro">Crear cuenta</a></li>
+<li><a href="/perfil">Mi perfil</a></li>
+</ul>
+</div>
+<div class="col-lg-4 col-md-6">
+<h6>Contacto</h6>
+<div class="contact-item"><i class="bi bi-envelope-fill"></i><span>gotocr@gmail.com</span></div>
+<div class="contact-item"><i class="bi bi-telephone-fill"></i><span>8888-8888</span></div>
+<div class="contact-item"><i class="bi bi-whatsapp"></i><span>+506 7070-7070 (WhatsApp)</span></div>
+<div class="contact-item"><i class="bi bi-geo-alt-fill"></i><span>Avenida Central, Edificio Toucan, piso 3, San José, Costa Rica</span></div>
+<div class="contact-item"><i class="bi bi-clock-fill"></i><span>Lunes a domingo — 6:00 a.m. a 10:00 p.m.</span></div>
+</div>
+</div>
+<div class="gcr-footer-bottom">
+<span>© 2026 GoToCR. Todos los derechos reservados.</span>
+<span><a href="#">Términos y condiciones</a> · <a href="#">Política de privacidad</a></span>
+</div>
+</div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/global.js"></script><script src="/js/registro.js"></script></body>
+</html>
