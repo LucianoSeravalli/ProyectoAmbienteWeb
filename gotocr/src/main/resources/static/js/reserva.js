@@ -30,7 +30,8 @@ async function cargarDatosReserva() {
             return;
         }
 
-        if (!respuesta.ok) throw new Error("No se pudieron cargar los datos de la reserva.");
+        if (!respuesta.ok)
+            throw new Error("No se pudieron cargar los datos de la reserva.");
 
         datosReserva = await respuesta.json();
 
@@ -44,11 +45,11 @@ async function cargarDatosReserva() {
 
         document.getElementById("resumenHotelNombre").textContent = hotel.nombre;
         document.getElementById("resumenHotelUbicacion").innerHTML =
-            `<i class="bi bi-geo-alt"></i> ${escaparHtml(
-                [hotel.canton, hotel.provincia].filter(Boolean).join(", ")
-            )}`;
+                `<i class="bi bi-geo-alt"></i> ${escaparHtml(
+                        [hotel.canton, hotel.provincia].filter(Boolean).join(", ")
+                        )}`;
         document.getElementById("resumenHotelImagen").src =
-            rutaImagen(hotel.imagenPrincipal);
+                rutaImagen(hotel.imagenPrincipal);
 
         document.getElementById("resumenCuarto").textContent = cuarto.tipoCuarto;
         document.getElementById("resumenEntrada").textContent = formatoFecha(fechaEntrada);
@@ -64,18 +65,18 @@ async function cargarDatosReserva() {
 
 function calcularResumen(entrada, salida, precioNoche) {
     const noches = Math.max(
-        0,
-        Math.round(
-            (new Date(`${salida}T00:00:00`) - new Date(`${entrada}T00:00:00`)) / 86400000
-        )
-    );
+            0,
+            Math.round(
+                    (new Date(`${salida}T00:00:00`) - new Date(`${entrada}T00:00:00`)) / 86400000
+                    )
+            );
 
     const subtotal = Number(precioNoche || 0) * noches;
     const impuestos = subtotal * 0.12;
     const total = subtotal + impuestos;
 
     document.getElementById("resumenCalculoNoches").textContent =
-        `${formatoMoneda(precioNoche)} x ${noches} noches`;
+            `${formatoMoneda(precioNoche)} x ${noches} noches`;
     document.getElementById("resumenSubtotal").textContent = formatoMoneda(subtotal);
     document.getElementById("resumenImpuestos").textContent = formatoMoneda(impuestos);
     document.getElementById("resumenTotal").textContent = formatoMoneda(total);
@@ -85,82 +86,96 @@ function actualizarMetodoPago() {
     const metodo = document.querySelector('input[name="metodoPago"]:checked')?.value;
     const camposTarjeta = document.getElementById("camposTarjeta");
 
-    if (!camposTarjeta) return;
+    if (!camposTarjeta)
+        return;
 
     camposTarjeta.classList.toggle("d-none", metodo !== "TARJETA");
 }
 
-async function confirmarReserva(evento) {
-    evento.preventDefault();
+async function confirmarReserva() {
 
-    const mensaje = document.getElementById("reservaMensaje");
+    const idCuartoHotel =
+            document.body.dataset.cuartoId;
 
-    if (!datosReserva) {
-        mostrarMensaje(mensaje, "No se pudo obtener la información de la reserva.");
-        return;
-    }
+    const fechaEntrada =
+            document.getElementById("fechaEntrada").value;
 
-    const telefono = document.getElementById("telefonoHuesped").value.trim();
-    const aceptaTerminos = document.getElementById("aceptaTerminos").checked;
-    const metodoPago = document.querySelector('input[name="metodoPago"]:checked')?.value;
-    const fechaEntrada = document.body.dataset.fechaEntrada;
-    const fechaSalida = document.body.dataset.fechaSalida;
-    const cantidadPersonas = Number(document.body.dataset.personas || 1);
+    const fechaSalida =
+            document.getElementById("fechaSalida").value;
 
-    if (!telefono) {
-        mostrarMensaje(mensaje, "El teléfono del huésped es obligatorio.");
-        return;
-    }
+    const cantidadPersonas =
+            document.getElementById("cantidadPersonas").value;
 
-    if (!metodoPago) {
-        mostrarMensaje(mensaje, "Seleccioná un método de pago.");
-        return;
-    }
+    const metodoPago =
+            document.querySelector(
+                    'input[name="metodoPago"]:checked'
+                    ).value;
 
-    if (metodoPago === "TARJETA") {
-        const numero = document.getElementById("numeroTarjeta").value.trim();
-        const vencimiento = document.getElementById("vencimiento").value.trim();
-        const cvv = document.getElementById("cvv").value.trim();
+    const datos =
+            new URLSearchParams();
 
-        if (!numero || !vencimiento || !cvv) {
-            mostrarMensaje(mensaje, "Completá los datos de la tarjeta.");
-            return;
-        }
-    }
+    datos.append(
+            "idCuartoHotel",
+            idCuartoHotel
+            );
 
-    if (!aceptaTerminos) {
-        mostrarMensaje(mensaje, "Debés aceptar los términos y condiciones.");
-        return;
-    }
+    datos.append(
+            "fechaEntrada",
+            fechaEntrada
+            );
 
-    const datos = new URLSearchParams({
-        idCuartoHotel: datosReserva.cuarto.idCuartoHotel,
-        fechaEntrada,
-        fechaSalida,
-        cantidadPersonas,
-        metodoPago
-    });
+    datos.append(
+            "fechaSalida",
+            fechaSalida
+            );
+
+    datos.append(
+            "cantidadPersonas",
+            cantidadPersonas
+            );
+
+    datos.append(
+            "metodoPago",
+            metodoPago
+            );
 
     try {
-        const respuesta = await fetch("/reserva/confirmar", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: datos
-        });
 
-        const resultado = await respuesta.json();
+        const respuesta =
+                await fetch(
+                        "/reserva/confirmar",
+                        {
+                            method: "POST",
 
-        if (!respuesta.ok || !resultado.ok) {
-            mostrarMensaje(mensaje, resultado.mensaje || "No se pudo registrar la reserva.");
-            return;
+                            headers: {
+                                "Content-Type":
+                                        "application/x-www-form-urlencoded"
+                            },
+
+                            body: datos
+                        }
+                );
+
+        const resultado =
+                await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                    resultado.error
+                    );
         }
 
-        mostrarMensaje(mensaje, resultado.mensaje, "success");
-        setTimeout(() => {
-            window.location.href = "/historial";
-        }, 900);
+        alert(
+                `Reserva #${resultado.idReserva} realizada correctamente`
+                );
+
+        window.location.href =
+                "/historial";
+
     } catch (error) {
-        console.error(error);
-        mostrarMensaje(mensaje, "Ocurrió un error al confirmar la reserva.");
+
+        mostrarError(
+                error.message
+                );
     }
 }

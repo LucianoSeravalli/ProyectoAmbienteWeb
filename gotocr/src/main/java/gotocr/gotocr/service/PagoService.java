@@ -1,6 +1,6 @@
 package gotocr.gotocr.service;
 
-
+import gotocr.gotocr.repository.ReservaRepository;
 import gotocr.gotocr.domain.Pago;
 import gotocr.gotocr.repository.PagoRepository;
 import lombok.RequiredArgsConstructor;
@@ -138,8 +138,8 @@ public class PagoService {
 
     private void validarMonto(BigDecimal monto) {
 
-        if (monto == null ||
-                monto.compareTo(BigDecimal.ZERO) <= 0) {
+        if (monto == null
+                || monto.compareTo(BigDecimal.ZERO) <= 0) {
 
             throw new IllegalArgumentException(
                     "El monto debe ser mayor que cero"
@@ -162,4 +162,5 @@ public class PagoService {
             throw new IllegalArgumentException(mensaje);
         }
     }
+    
 }

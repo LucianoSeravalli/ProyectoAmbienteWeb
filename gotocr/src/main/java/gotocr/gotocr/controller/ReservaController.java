@@ -7,17 +7,15 @@ import gotocr.gotocr.service.CuartoHotelService;
 import gotocr.gotocr.service.ReservaService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 @Controller
@@ -29,57 +27,153 @@ public class ReservaController {
     private final CuartoHotelService cuartoHotelService;
     private final ClienteService clienteService;
 
+    // =====================================================
+    // MOSTRAR VISTA
+    // =====================================================
     @GetMapping("/{idCuarto}")
-    public String reserva(
+    public String mostrarReserva(
             @PathVariable Integer idCuarto,
-            @RequestParam LocalDate fechaEntrada,
-            @RequestParam LocalDate fechaSalida,
-            @RequestParam Integer cantidadPersonas,
-            HttpSession session,
-            Model model) {
+            Model model,
+            HttpSession session) {
 
-        if (session.getAttribute("idCliente") == null) {
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
+
+        if (idCliente == null) {
             return "redirect:/login";
         }
 
-        model.addAttribute("idCuarto", idCuarto);
-        model.addAttribute("fechaEntrada", fechaEntrada);
-        model.addAttribute("fechaSalida", fechaSalida);
-        model.addAttribute("cantidadPersonas", cantidadPersonas);
+        model.addAttribute(
+                "idCuarto",
+                idCuarto
+        );
 
         return "reserva";
     }
 
+    // =====================================================
+    // DATOS PARA JAVASCRIPT
+    // =====================================================
     @GetMapping("/datos/{idCuarto}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> datosReserva(
+    public ResponseEntity<?> obtenerDatosReserva(
             @PathVariable Integer idCuarto,
             HttpSession session) {
 
-        Integer idCliente = (Integer) session.getAttribute("idCliente");
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity
+                    .status(401)
+                    .body(Map.of(
+                            "error",
+                            "Debe iniciar sesión"
+                    ));
         }
 
-        Cliente cliente = clienteService.buscarPorId(idCliente).orElse(null);
-        CuartoHotel cuarto = cuartoHotelService.buscarPorId(idCuarto).orElse(null);
+        try {
 
-        if (cliente == null || cuarto == null) {
-            return ResponseEntity.notFound().build();
+            CuartoHotel cuarto
+                    = cuartoHotelService
+                            .buscarPorId(idCuarto)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cuarto no existe"
+                            )
+                            );
+
+            Cliente cliente
+                    = clienteService
+                            .buscarPorId(idCliente)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cliente no existe"
+                            )
+                            );
+
+            Map<String, Object> respuesta
+                    = new HashMap<>();
+
+            respuesta.put(
+                    "idCuartoHotel",
+                    cuarto.getIdCuartoHotel()
+            );
+
+            respuesta.put(
+                    "numeroCuarto",
+                    cuarto.getNumeroCuarto()
+            );
+
+            respuesta.put(
+                    "cantidadPersonas",
+                    cuarto.getCantidadPersonas()
+            );
+
+            respuesta.put(
+                    "precioNoche",
+                    cuarto.getPrecioNoche()
+            );
+
+            respuesta.put(
+                    "estado",
+                    cuarto.getEstado()
+            );
+
+            respuesta.put(
+                    "idHotel",
+                    cuarto.getHotel().getIdHotel()
+            );
+
+            respuesta.put(
+                    "nombreHotel",
+                    cuarto.getHotel().getNombre()
+            );
+
+            respuesta.put(
+                    "provincia",
+                    cuarto.getHotel().getProvincia()
+            );
+
+            respuesta.put(
+                    "canton",
+                    cuarto.getHotel().getCanton()
+            );
+
+            respuesta.put(
+                    "nombreCliente",
+                    cliente.getNombre()
+            );
+
+            respuesta.put(
+                    "apellidoCliente",
+                    cliente.getApellido()
+            );
+
+            respuesta.put(
+                    "correoCliente",
+                    cliente.getCorreo()
+            );
+
+            return ResponseEntity.ok(respuesta);
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "error",
+                            e.getMessage()
+                    ));
         }
-
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("cliente", clienteAJson(cliente));
-        json.put("cuarto", cuartoAJson(cuarto));
-        json.put("hotel", hotelAJson(cuarto));
-
-        return ResponseEntity.ok(json);
     }
 
+    // =====================================================
+    // CONFIRMAR RESERVA DESDE JAVASCRIPT
+    // =====================================================
     @PostMapping("/confirmar")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> confirmarReserva(
+    public ResponseEntity<?> confirmarReserva(
             @RequestParam Integer idCuartoHotel,
             @RequestParam LocalDate fechaEntrada,
             @RequestParam LocalDate fechaSalida,
@@ -87,107 +181,117 @@ public class ReservaController {
             @RequestParam String metodoPago,
             HttpSession session) {
 
-        Integer idCliente = (Integer) session.getAttribute("idCliente");
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
-            return respuesta(HttpStatus.UNAUTHORIZED, false, "Debe iniciar sesión.");
+
+            return ResponseEntity
+                    .status(401)
+                    .body(Map.of(
+                            "error",
+                            "Debe iniciar sesión"
+                    ));
         }
 
         try {
-            CuartoHotel cuarto = cuartoHotelService.buscarPorId(idCuartoHotel)
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("El cuarto seleccionado no existe.")
-                    );
 
-            if (!"DISPONIBLE".equalsIgnoreCase(cuarto.getEstado())) {
-                throw new IllegalArgumentException("El cuarto seleccionado no está disponible.");
+            CuartoHotel cuarto
+                    = cuartoHotelService
+                            .buscarPorId(idCuartoHotel)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cuarto seleccionado no existe"
+                            )
+                            );
+
+            // =============================
+            // DISPONIBILIDAD
+            // =============================
+            if (!"DISPONIBLE".equalsIgnoreCase(
+                    cuarto.getEstado())) {
+
+                throw new IllegalArgumentException(
+                        "El cuarto no se encuentra disponible"
+                );
             }
 
-            if (cantidadPersonas > cuarto.getCantidadPersonas()) {
+            // =============================
+            // CAPACIDAD
+            // =============================
+            if (cantidadPersonas
+                    > cuarto.getCantidadPersonas()) {
+
                 throw new IllegalArgumentException(
-                        "La cantidad de huéspedes supera la capacidad del cuarto."
+                        "La cantidad de huéspedes supera la capacidad del cuarto"
+                );
+            }
+
+            // =============================
+            // FECHAS
+            // =============================
+            if (fechaEntrada == null
+                    || fechaSalida == null) {
+
+                throw new IllegalArgumentException(
+                        "Debe indicar las fechas de entrada y salida"
                 );
             }
 
             if (!fechaSalida.isAfter(fechaEntrada)) {
+
                 throw new IllegalArgumentException(
-                        "La fecha de salida debe ser posterior a la fecha de entrada."
+                        "La fecha de salida debe ser posterior a la fecha de entrada"
                 );
             }
 
-            long noches = ChronoUnit.DAYS.between(fechaEntrada, fechaSalida);
+            long noches
+                    = ChronoUnit.DAYS.between(
+                            fechaEntrada,
+                            fechaSalida
+                    );
 
-            BigDecimal subtotal = cuarto.getPrecioNoche()
-                    .multiply(BigDecimal.valueOf(noches));
+            // =============================
+            // PRECIO REAL DESDE LA BD
+            // =============================
+            BigDecimal precioTotal
+                    = cuarto.getPrecioNoche()
+                            .multiply(
+                                    BigDecimal.valueOf(noches)
+                            );
 
-            BigDecimal precioTotal = subtotal
-                    .multiply(new BigDecimal("1.12"))
-                    .setScale(2, RoundingMode.HALF_UP);
+            Integer idReserva
+                    = reservaService.confirmarReserva(
+                            idCliente,
+                            cuarto.getHotel().getIdHotel(),
+                            cuarto.getIdCuartoHotel(),
+                            fechaEntrada,
+                            fechaSalida,
+                            cantidadPersonas,
+                            precioTotal,
+                            metodoPago
+                    );
 
-            reservaService.insertarReserva(
-                    idCliente,
-                    cuarto.getHotel().getIdHotel(),
-                    cuarto.getIdCuartoHotel(),
-                    fechaEntrada,
-                    fechaSalida,
-                    cantidadPersonas,
-                    precioTotal,
-                    "CONFIRMADA"
+            return ResponseEntity.ok(
+                    Map.of(
+                            "mensaje",
+                            "Reserva realizada correctamente",
+                            "idReserva",
+                            idReserva
+                    )
             );
 
-            /*
-             * metodoPago ya llega desde JavaScript.
-             * Falta enlazar PAGO cuando sp_insert_reserva devuelva el idReserva generado.
-             */
-            return respuesta(HttpStatus.OK, true, "Reserva registrada correctamente.");
+        } catch (IllegalArgumentException
+                | IllegalStateException e) {
 
-        } catch (IllegalArgumentException e) {
-            return respuesta(HttpStatus.BAD_REQUEST, false, e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            Map.of(
+                                    "error",
+                                    e.getMessage()
+                            )
+                    );
         }
-    }
-
-    private Map<String, Object> clienteAJson(Cliente cliente) {
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("nombre", cliente.getNombre());
-        json.put("apellido", cliente.getApellido());
-        json.put("correo", cliente.getCorreo());
-        return json;
-    }
-
-    private Map<String, Object> cuartoAJson(CuartoHotel cuarto) {
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("idCuartoHotel", cuarto.getIdCuartoHotel());
-        json.put("numeroCuarto", cuarto.getNumeroCuarto());
-        json.put("cantidadPersonas", cuarto.getCantidadPersonas());
-        json.put("precioNoche", cuarto.getPrecioNoche());
-        json.put("estado", cuarto.getEstado());
-        json.put(
-                "tipoCuarto",
-                cuarto.getTipoCuarto() != null
-                        ? cuarto.getTipoCuarto().getNombreTipo()
-                        : "Cuarto"
-        );
-        return json;
-    }
-
-    private Map<String, Object> hotelAJson(CuartoHotel cuarto) {
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("idHotel", cuarto.getHotel().getIdHotel());
-        json.put("nombre", cuarto.getHotel().getNombre());
-        json.put("canton", cuarto.getHotel().getCanton());
-        json.put("provincia", cuarto.getHotel().getProvincia());
-        json.put("imagenPrincipal", cuarto.getHotel().getImagenPrincipal());
-        return json;
-    }
-
-    private ResponseEntity<Map<String, Object>> respuesta(
-            HttpStatus estado,
-            boolean ok,
-            String mensaje) {
-
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("ok", ok);
-        json.put("mensaje", mensaje);
-        return ResponseEntity.status(estado).body(json);
     }
 }
