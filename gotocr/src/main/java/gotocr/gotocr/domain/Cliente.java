@@ -48,7 +48,7 @@ public class Cliente {
     private List<Reserva> reservas = new ArrayList<>();
 
     @OneToMany(mappedBy = "cliente")
-    private List<ReservaHotel> resenas = new ArrayList<>();
+    private List<ResenaHotel> resenas = new ArrayList<>();
 
     @OneToMany(mappedBy = "cliente")
     private List<HistorialCliente> historial = new ArrayList<>();
