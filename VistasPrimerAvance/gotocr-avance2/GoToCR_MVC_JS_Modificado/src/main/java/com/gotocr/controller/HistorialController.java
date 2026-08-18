@@ -1,9 +1,9 @@
-package gotocr.gotocr.controller;
+package com.gotocr.controller;
 
-import gotocr.gotocr.domain.Cliente;
-import gotocr.gotocr.domain.Reserva;
-import gotocr.gotocr.service.ClienteService;
-import gotocr.gotocr.service.ReservaService;
+import com.gotocr.domain.Cliente;
+import com.gotocr.domain.Reserva;
+import com.gotocr.service.ClienteService;
+import com.gotocr.service.ReservaService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

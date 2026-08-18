@@ -1,12 +1,12 @@
-package gotocr.gotocr.controller;
+package com.gotocr.controller;
 
-import gotocr.gotocr.domain.CuartoHotel;
-import gotocr.gotocr.domain.Hotel;
-import gotocr.gotocr.domain.ImagenCuarto;
-import gotocr.gotocr.domain.ResenaHotel;
-import gotocr.gotocr.service.CuartoHotelService;
-import gotocr.gotocr.service.HotelService;
-import gotocr.gotocr.service.ResenaHotelService;
+import com.gotocr.domain.CuartoHotel;
+import com.gotocr.domain.Hotel;
+import com.gotocr.domain.ImagenCuarto;
+import com.gotocr.domain.ResenaHotel;
+import com.gotocr.service.CuartoHotelService;
+import com.gotocr.service.HotelService;
+import com.gotocr.service.ResenaHotelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

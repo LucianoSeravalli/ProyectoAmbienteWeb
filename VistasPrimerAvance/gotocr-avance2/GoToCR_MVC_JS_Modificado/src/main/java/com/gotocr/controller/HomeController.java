@@ -1,9 +1,9 @@
-package gotocr.gotocr.controller;
+package com.gotocr.controller;
 
-import gotocr.gotocr.domain.CuartoHotel;
-import gotocr.gotocr.domain.Hotel;
-import gotocr.gotocr.service.CuartoHotelService;
-import gotocr.gotocr.service.HotelService;
+import com.gotocr.domain.CuartoHotel;
+import com.gotocr.domain.Hotel;
+import com.gotocr.service.CuartoHotelService;
+import com.gotocr.service.HotelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

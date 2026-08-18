@@ -1,8 +1,6 @@
+package com.gotocr.controller;
 
-package gotocr.gotocr.controller;
-
-
-import gotocr.gotocr.service.ResenaHotelService;
+import com.gotocr.service.ResenaHotelService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
