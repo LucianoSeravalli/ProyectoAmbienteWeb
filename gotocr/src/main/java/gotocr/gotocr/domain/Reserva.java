@@ -52,5 +52,31 @@ public class Reserva {
     private List<Pago> pagos = new ArrayList<>();
 
     @OneToMany(mappedBy = "reserva")
-    private List<HistorialCliente> historial = new ArrayList<>();
+
+   private List<HistorialCliente> historial = new ArrayList<>();
+
+/**
+ * Valida que los datos básicos de la reserva sean coherentes.
+ *
+ * @return true si la reserva cumple las reglas básicas de negocio.
+ */
+public boolean validarReserva() {
+    if (fechaEntrada == null || fechaSalida == null) {
+        return false;
+    }
+
+    if (!fechaSalida.isAfter(fechaEntrada)) {
+        return false;
+    }
+
+    if (cantidadPersonas == null || cantidadPersonas < 1) {
+        return false;
+    }
+
+    if (precioTotal == null || precioTotal.compareTo(BigDecimal.ZERO) < 0) {
+        return false;
+    }
+
+        return true;
+    }
 }
