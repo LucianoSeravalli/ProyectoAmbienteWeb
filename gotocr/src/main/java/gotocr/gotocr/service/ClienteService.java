@@ -22,30 +22,22 @@ public class ClienteService {
     }
 
     public Optional<Cliente> buscarPorId(Integer idCliente) {
-
         validarId(idCliente);
-
         return clienteRepository.buscarPorId(idCliente);
     }
 
     public Optional<Cliente> buscarPorCorreo(String correo) {
-
         validarCorreo(correo);
-
         return clienteRepository.buscarPorCorreo(correo.trim());
     }
 
     public List<Cliente> buscarPorNombre(String nombre) {
-
         validarTexto(nombre, "El nombre es obligatorio");
-
         return clienteRepository.buscarPorNombre(nombre.trim());
     }
 
     public List<Cliente> buscarPorRol(Integer idRol) {
-
         validarId(idRol);
-
         return clienteRepository.buscarPorRol(idRol);
     }
 
@@ -67,9 +59,7 @@ public class ClienteService {
         validarTexto(contrasena, "La contraseña es obligatoria");
 
         if (clienteRepository.buscarPorCorreo(correo.trim()).isPresent()) {
-            throw new IllegalArgumentException(
-                    "Ya existe un cliente registrado con ese correo"
-            );
+            throw new IllegalArgumentException("Ya existe un cliente registrado con ese correo");
         }
 
         clienteRepository.insertarCliente(

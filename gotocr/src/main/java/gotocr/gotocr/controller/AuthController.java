@@ -42,6 +42,7 @@ public class AuthController {
             }
 
             session.setAttribute("idCliente", cliente.getIdCliente());
+            session.setAttribute("idRol", cliente.getRol().getIdRol());
             session.setAttribute("clienteSesion", cliente);
 
             return "redirect:/";
@@ -78,7 +79,7 @@ public class AuthController {
                     );
 
             clienteService.insertarCliente(
-                    rolCliente.getIdRol(),
+                    1,
                     nombre,
                     apellido,
                     correo,
