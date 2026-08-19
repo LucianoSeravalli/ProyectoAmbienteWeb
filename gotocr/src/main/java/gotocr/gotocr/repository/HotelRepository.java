@@ -112,4 +112,5 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
     void recalcularCuartosHotel(
             @Param("p_idHotel") Integer idHotel
     );
+   
 }

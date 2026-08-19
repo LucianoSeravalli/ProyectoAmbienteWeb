@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CuartoHotelRepository
@@ -56,5 +57,16 @@ public interface CuartoHotelRepository
     )
     void eliminarCuartoHotel(
             @Param("p_idCuartoHotel") Integer idCuartoHotel
+    );
+
+    @Query("""
+       SELECT c
+       FROM CuartoHotel c
+       WHERE c.hotel.idHotel = :idHotel
+       AND c.numeroCuarto = :numeroCuarto
+       """)
+    Optional<CuartoHotel> buscarPorHotelYNumero(
+            @Param("idHotel") Integer idHotel,
+            @Param("numeroCuarto") Integer numeroCuarto
     );
 }

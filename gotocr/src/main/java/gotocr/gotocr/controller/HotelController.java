@@ -7,6 +7,7 @@ import gotocr.gotocr.domain.ResenaHotel;
 import gotocr.gotocr.service.CuartoHotelService;
 import gotocr.gotocr.service.HotelService;
 import gotocr.gotocr.service.ResenaHotelService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -222,20 +223,60 @@ public class HotelController {
         return json;
     }
 
-    private Map<String, Object> resenaAJson(ResenaHotel resena) {
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("idResena", resena.getIdResena());
-        json.put("calificacion", resena.getCalificacion());
-        json.put("comentario", resena.getComentario());
-        json.put("fecha", resena.getFecha());
+    private Map<String, Object> resenaAJson(
+            ResenaHotel resena) {
+
+        Map<String, Object> json
+                = new LinkedHashMap<>();
+
+        json.put(
+                "idResena",
+                resena.getIdResena()
+        );
+
+        json.put(
+                "calificacion",
+                resena.getCalificacion()
+        );
+
+        json.put(
+                "comentario",
+                resena.getComentario()
+        );
+
+        json.put(
+                "fecha",
+                resena.getFecha()
+        );
 
         if (resena.getCliente() != null) {
+
+            json.put(
+                    "idCliente",
+                    resena.getCliente()
+                            .getIdCliente()
+            );
+
             json.put(
                     "cliente",
-                    resena.getCliente().getNombre() + " " + resena.getCliente().getApellido()
+                    resena.getCliente()
+                            .getNombre()
+                    + " "
+                    + resena.getCliente()
+                            .getApellido()
             );
+
         } else {
-            json.put("cliente", "Cliente");
+
+            json.put(
+                    "idCliente",
+                    null
+            );
+
+            json.put(
+                    "cliente",
+                    "Cliente"
+            );
         }
 
         return json;
@@ -394,6 +435,118 @@ public class HotelController {
                                     e.getMessage() != null
                                     ? e.getMessage()
                                     : "Error al guardar el hotel."
+                            )
+                    );
+        }
+    }
+
+    @PostMapping("/{idHotel}/resenas/guardar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> guardarResena(
+            @PathVariable Integer idHotel,
+            @RequestParam Integer calificacion,
+            @RequestParam(required = false) String comentario,
+            HttpSession session) {
+
+        try {
+
+            Integer idCliente
+                    = (Integer) session.getAttribute(
+                            "idCliente"
+                    );
+
+            if (idCliente == null) {
+
+                return ResponseEntity
+                        .status(401)
+                        .body(
+                                Map.of(
+                                        "error",
+                                        "Debe iniciar sesión para dejar una reseña."
+                                )
+                        );
+            }
+
+            resenaHotelService
+                    .guardarResena(
+                            idCliente,
+                            idHotel,
+                            calificacion,
+                            comentario
+                    );
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "mensaje",
+                            "Reseña guardada correctamente."
+                    )
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            Map.of(
+                                    "error",
+                                    e.getMessage() != null
+                                    ? e.getMessage()
+                                    : "No fue posible guardar la reseña."
+                            )
+                    );
+        }
+    }
+
+    @PostMapping("/resenas/eliminar/{idResena}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> eliminarResena(
+            @PathVariable Integer idResena,
+            HttpSession session) {
+
+        try {
+
+            Integer idCliente
+                    = (Integer) session.getAttribute(
+                            "idCliente"
+                    );
+
+            if (idCliente == null) {
+
+                return ResponseEntity
+                        .status(401)
+                        .body(
+                                Map.of(
+                                        "error",
+                                        "Debe iniciar sesión."
+                                )
+                        );
+            }
+
+            resenaHotelService
+                    .eliminarResena(
+                            idResena,
+                            idCliente
+                    );
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "mensaje",
+                            "Reseña eliminada correctamente."
+                    )
+            );
+
+        } catch (Exception e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            Map.of(
+                                    "error",
+                                    e.getMessage() != null
+                                    ? e.getMessage()
+                                    : "No fue posible eliminar la reseña."
                             )
                     );
         }

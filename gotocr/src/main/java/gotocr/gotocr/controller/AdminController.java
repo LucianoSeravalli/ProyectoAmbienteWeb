@@ -1,5 +1,6 @@
 package gotocr.gotocr.controller;
 
+import gotocr.gotocr.service.ImagenCuartoService;
 import gotocr.gotocr.domain.CuartoHotel;
 import gotocr.gotocr.domain.Hotel;
 import gotocr.gotocr.domain.TipoCuarto;
@@ -25,6 +26,7 @@ public class AdminController {
     private final HotelService hotelService;
     private final CuartoHotelService cuartoHotelService;
     private final TipoCuartoService tipoCuartoService;
+    private final ImagenCuartoService imagenCuartoService;
 
     // =========================================================
     // DASHBOARD
@@ -284,40 +286,79 @@ public class AdminController {
     @PostMapping("/cuartos/guardar")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> guardarCuarto(
-            @RequestParam(
-                    required = false
-            ) Integer idCuartoHotel,
+            @RequestParam(required = false) Integer idCuartoHotel,
             @RequestParam Integer idHotel,
             @RequestParam Integer idTipoCuarto,
             @RequestParam Integer numeroCuarto,
             @RequestParam Integer cantidadPersonas,
             @RequestParam BigDecimal precioNoche,
-            @RequestParam String estado) {
+            @RequestParam String estado,
+            @RequestParam(
+                    name = "imagenCuarto",
+                    required = false
+            ) MultipartFile imagenCuarto) {
 
         try {
 
+            Integer idCuartoParaImagen;
+
             if (idCuartoHotel == null) {
 
-                cuartoHotelService.insertarCuartoHotel(
-                        idHotel,
-                        idTipoCuarto,
-                        numeroCuarto,
-                        cantidadPersonas,
-                        precioNoche,
-                        estado
-                );
+                // 1. Insertamos el cuarto
+                cuartoHotelService
+                        .insertarCuartoHotel(
+                                idHotel,
+                                idTipoCuarto,
+                                numeroCuarto,
+                                cantidadPersonas,
+                                precioNoche,
+                                estado
+                        );
+
+                // 2. Buscamos el cuarto recién insertado
+                CuartoHotel cuartoNuevo
+                        = cuartoHotelService
+                                .buscarPorHotelYNumero(
+                                        idHotel,
+                                        numeroCuarto
+                                )
+                                .orElseThrow(()
+                                        -> new IllegalStateException(
+                                        "El cuarto fue creado, pero no se pudo encontrar para guardar la imagen."
+                                )
+                                );
+
+                idCuartoParaImagen
+                        = cuartoNuevo
+                                .getIdCuartoHotel();
 
             } else {
 
-                cuartoHotelService.actualizarCuartoHotel(
-                        idCuartoHotel,
-                        idHotel,
-                        idTipoCuarto,
-                        numeroCuarto,
-                        cantidadPersonas,
-                        precioNoche,
-                        estado
-                );
+                // Actualizamos
+                cuartoHotelService
+                        .actualizarCuartoHotel(
+                                idCuartoHotel,
+                                idHotel,
+                                idTipoCuarto,
+                                numeroCuarto,
+                                cantidadPersonas,
+                                precioNoche,
+                                estado
+                        );
+
+                idCuartoParaImagen
+                        = idCuartoHotel;
+            }
+
+            // 3. Guardamos/reemplazamos imagen
+            if (imagenCuarto != null
+                    && !imagenCuarto.isEmpty()) {
+
+                imagenCuartoService
+                        .guardarImagenCuarto(
+                                idCuartoParaImagen,
+                                imagenCuarto
+                        );
             }
 
             return ResponseEntity.ok(

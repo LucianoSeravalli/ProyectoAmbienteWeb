@@ -246,4 +246,16 @@ public class CuartoHotelService {
             );
         }
     }
+
+    public Optional<CuartoHotel> buscarPorHotelYNumero(
+            Integer idHotel,
+            Integer numeroCuarto) {
+
+        return cuartoHotelRepository
+                .buscarPorHotelYNumero(
+                        idHotel,
+                        numeroCuarto
+                );
+    }
+
 }
