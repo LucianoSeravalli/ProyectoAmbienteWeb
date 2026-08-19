@@ -4,13 +4,13 @@
  */
 package gotocr.gotocr.service;
 
-
 import gotocr.gotocr.domain.ImagenCuarto;
 import gotocr.gotocr.repository.ImagenCuartoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -101,5 +101,9 @@ public class ImagenCuartoService {
         if (texto == null || texto.trim().isEmpty()) {
             throw new IllegalArgumentException(mensaje);
         }
+    }
+
+    public Optional<ImagenCuarto> buscarPorId(Integer idImagen) {
+        return imagenCuartoRepository.findById(idImagen);
     }
 }

@@ -1,10 +1,12 @@
-
 package gotocr.gotocr.service;
 
 import gotocr.gotocr.domain.CuartoHotel;
 import gotocr.gotocr.repository.CuartoHotelRepository;
+import gotocr.gotocr.repository.HotelRepository;
+import gotocr.gotocr.repository.TipoCuartoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,76 +18,30 @@ public class CuartoHotelService {
 
     private final CuartoHotelRepository cuartoHotelRepository;
 
-    public List<CuartoHotel> listarCuartos() {
-        return cuartoHotelRepository.listarCuartos();
-    }
+    private final HotelRepository hotelRepository;
 
-    public Optional<CuartoHotel> buscarPorId(Integer idCuartoHotel) {
+    private final TipoCuartoRepository tipoCuartoRepository;
 
-        validarId(idCuartoHotel);
+    public List<CuartoHotel> buscarPorHotel(
+            Integer idHotel) {
 
-        return cuartoHotelRepository.buscarPorId(idCuartoHotel);
-    }
-
-    public List<CuartoHotel> buscarPorHotel(Integer idHotel) {
-
-        validarId(idHotel);
-
-        return cuartoHotelRepository.buscarPorHotel(idHotel);
-    }
-
-    public List<CuartoHotel> buscarPorTipo(Integer idTipoCuarto) {
-
-        validarId(idTipoCuarto);
-
-        return cuartoHotelRepository.buscarPorTipo(idTipoCuarto);
-    }
-
-    public List<CuartoHotel> buscarPorHotelYEstado(
-            Integer idHotel,
-            String estado) {
-
-        validarId(idHotel);
-        validarTexto(estado, "El estado es obligatorio");
-
-        return cuartoHotelRepository.buscarPorHotelYEstado(
+        validarId(
                 idHotel,
-                estado.trim()
+                "El hotel es obligatorio."
         );
+
+        return cuartoHotelRepository
+                .buscarPorHotel(idHotel);
     }
 
-    public List<CuartoHotel> buscarPorCapacidad(
-            Integer cantidadPersonas) {
+    public Optional<CuartoHotel> buscarPorId(
+            Integer idCuartoHotel) {
 
-        validarNumeroPositivo(
-                cantidadPersonas,
-                "La cantidad de personas debe ser mayor que cero"
-        );
-
-        return cuartoHotelRepository.buscarPorCapacidad(
-                cantidadPersonas
-        );
+        return cuartoHotelRepository
+                .findById(idCuartoHotel);
     }
 
-    public List<CuartoHotel> buscarPorRangoPrecio(
-            BigDecimal precioMin,
-            BigDecimal precioMax) {
-
-        validarPrecio(precioMin);
-        validarPrecio(precioMax);
-
-        if (precioMin.compareTo(precioMax) > 0) {
-            throw new IllegalArgumentException(
-                    "El precio mínimo no puede ser mayor que el máximo"
-            );
-        }
-
-        return cuartoHotelRepository.buscarPorRangoPrecio(
-                precioMin,
-                precioMax
-        );
-    }
-
+    @Transactional
     public void insertarCuartoHotel(
             Integer idHotel,
             Integer idTipoCuarto,
@@ -94,33 +50,36 @@ public class CuartoHotelService {
             BigDecimal precioNoche,
             String estado) {
 
-        validarId(idHotel);
-        validarId(idTipoCuarto);
-
-        validarNumeroPositivo(
-                numeroCuarto,
-                "El número de cuarto debe ser mayor que cero"
-        );
-
-        validarNumeroPositivo(
-                cantidadPersonas,
-                "La cantidad de personas debe ser mayor que cero"
-        );
-
-        validarPrecio(precioNoche);
-
-        validarTexto(estado, "El estado es obligatorio");
-
-        cuartoHotelRepository.insertarCuartoHotel(
+        validarDatos(
                 idHotel,
                 idTipoCuarto,
                 numeroCuarto,
                 cantidadPersonas,
                 precioNoche,
-                estado.trim()
+                estado
         );
+
+        validarRelaciones(
+                idHotel,
+                idTipoCuarto
+        );
+
+        cuartoHotelRepository
+                .insertarCuartoHotel(
+                        idHotel,
+                        idTipoCuarto,
+                        numeroCuarto,
+                        cantidadPersonas,
+                        precioNoche,
+                        estado.trim()
+                );
+        hotelRepository
+                .recalcularCuartosHotel(
+                        idHotel
+                );
     }
 
+    @Transactional
     public void actualizarCuartoHotel(
             Integer idCuartoHotel,
             Integer idHotel,
@@ -130,80 +89,160 @@ public class CuartoHotelService {
             BigDecimal precioNoche,
             String estado) {
 
-        validarId(idCuartoHotel);
-        validarId(idHotel);
-        validarId(idTipoCuarto);
-
-        if (cuartoHotelRepository.buscarPorId(idCuartoHotel).isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No existe el cuarto indicado"
-            );
-        }
-
-        validarNumeroPositivo(
-                numeroCuarto,
-                "El número de cuarto debe ser mayor que cero"
-        );
-
-        validarNumeroPositivo(
-                cantidadPersonas,
-                "La cantidad de personas debe ser mayor que cero"
-        );
-
-        validarPrecio(precioNoche);
-        validarTexto(estado, "El estado es obligatorio");
-
-        cuartoHotelRepository.actualizarCuartoHotel(
+        validarId(
                 idCuartoHotel,
+                "El cuarto es obligatorio."
+        );
+
+        validarDatos(
                 idHotel,
                 idTipoCuarto,
                 numeroCuarto,
                 cantidadPersonas,
                 precioNoche,
-                estado.trim()
+                estado
         );
-    }
 
-    public void eliminarCuartoHotel(Integer idCuartoHotel) {
+        if (!cuartoHotelRepository
+                .existsById(idCuartoHotel)) {
 
-        validarId(idCuartoHotel);
-
-        if (cuartoHotelRepository.buscarPorId(idCuartoHotel).isEmpty()) {
             throw new IllegalArgumentException(
-                    "No existe el cuarto indicado"
+                    "El cuarto indicado no existe."
             );
         }
 
-        cuartoHotelRepository.eliminarCuartoHotel(idCuartoHotel);
+        validarRelaciones(
+                idHotel,
+                idTipoCuarto
+        );
+
+        cuartoHotelRepository
+                .actualizarCuartoHotel(
+                        idCuartoHotel,
+                        idHotel,
+                        idTipoCuarto,
+                        numeroCuarto,
+                        cantidadPersonas,
+                        precioNoche,
+                        estado.trim()
+                );
     }
 
-    private void validarId(Integer id) {
+    @Transactional
+    public void eliminarCuartoHotel(
+            Integer idCuartoHotel) {
+
+        validarId(
+                idCuartoHotel,
+                "El cuarto es obligatorio."
+        );
+
+        CuartoHotel cuarto
+                = cuartoHotelRepository
+                        .findById(idCuartoHotel)
+                        .orElseThrow(()
+                                -> new IllegalArgumentException(
+                                "El cuarto indicado no existe."
+                        )
+                        );
+
+        Integer idHotel
+                = cuarto.getHotel()
+                        .getIdHotel();
+
+        cuartoHotelRepository
+                .eliminarCuartoHotel(
+                        idCuartoHotel
+                );
+
+        hotelRepository
+                .recalcularCuartosHotel(
+                        idHotel
+                );
+    }
+
+    private void validarRelaciones(
+            Integer idHotel,
+            Integer idTipoCuarto) {
+
+        if (!hotelRepository
+                .existsById(idHotel)) {
+
+            throw new IllegalArgumentException(
+                    "El hotel indicado no existe."
+            );
+        }
+
+        if (!tipoCuartoRepository
+                .existsById(idTipoCuarto)) {
+
+            throw new IllegalArgumentException(
+                    "El tipo de cuarto indicado no existe."
+            );
+        }
+    }
+
+    private void validarDatos(
+            Integer idHotel,
+            Integer idTipoCuarto,
+            Integer numeroCuarto,
+            Integer cantidadPersonas,
+            BigDecimal precioNoche,
+            String estado) {
+
+        validarId(
+                idHotel,
+                "El hotel es obligatorio."
+        );
+
+        validarId(
+                idTipoCuarto,
+                "El tipo de cuarto es obligatorio."
+        );
+
+        if (numeroCuarto == null
+                || numeroCuarto <= 0) {
+
+            throw new IllegalArgumentException(
+                    "El número de cuarto debe ser mayor a 0."
+            );
+        }
+
+        if (cantidadPersonas == null
+                || cantidadPersonas <= 0) {
+
+            throw new IllegalArgumentException(
+                    "La cantidad de personas debe ser mayor a 0."
+            );
+        }
+
+        if (precioNoche == null
+                || precioNoche.compareTo(
+                        BigDecimal.ZERO
+                ) <= 0) {
+
+            throw new IllegalArgumentException(
+                    "El precio por noche debe ser mayor a 0."
+            );
+        }
+
+        if (estado == null
+                || estado.trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "El estado es obligatorio."
+            );
+        }
+    }
+
+    private void validarId(
+            Integer id,
+            String mensaje) {
+
         if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                    "El ID debe ser mayor que cero"
-            );
-        }
-    }
-
-    private void validarTexto(String texto, String mensaje) {
-        if (texto == null || texto.trim().isEmpty()) {
-            throw new IllegalArgumentException(mensaje);
-        }
-    }
-
-    private void validarNumeroPositivo(Integer numero, String mensaje) {
-        if (numero == null || numero <= 0) {
-            throw new IllegalArgumentException(mensaje);
-        }
-    }
-
-    private void validarPrecio(BigDecimal precio) {
-
-        if (precio == null ||
-                precio.compareTo(BigDecimal.ZERO) < 0) {
 
             throw new IllegalArgumentException(
-                    "El precio no puede ser nulo ni negativo"
+                    mensaje
             );
         }
     }

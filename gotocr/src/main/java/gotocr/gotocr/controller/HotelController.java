@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/hoteles")
@@ -98,41 +99,126 @@ public class HotelController {
     }
 
     private Map<String, Object> hotelDetalleAJson(Hotel hotel) {
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("idHotel", hotel.getIdHotel());
-        json.put("nombre", hotel.getNombre());
-        json.put("descripcion", hotel.getDescripcion());
-        json.put("imagenPrincipal", hotel.getImagenPrincipal());
-        json.put("provincia", hotel.getProvincia());
-        json.put("canton", hotel.getCanton());
-        json.put("direccion", hotel.getDireccion());
-        json.put("telefono", hotel.getTelefono());
-        json.put("calificacionPromedio", hotel.getCalificacionPromedio());
-        json.put("cuartosDisponibles", hotel.getCuartosDisponibles());
-        json.put("estado", hotel.getEstado());
+
+        Map<String, Object> json
+                = new LinkedHashMap<>();
+
+        json.put(
+                "idHotel",
+                hotel.getIdHotel()
+        );
+
+        json.put(
+                "nombre",
+                hotel.getNombre()
+        );
+
+        json.put(
+                "descripcion",
+                hotel.getDescripcion()
+        );
+
+        json.put(
+                "tieneImagen",
+                hotel.getImagenPrincipal() != null
+                && hotel.getImagenPrincipal().length > 0
+        );
+
+        json.put(
+                "provincia",
+                hotel.getProvincia()
+        );
+
+        json.put(
+                "canton",
+                hotel.getCanton()
+        );
+
+        json.put(
+                "direccion",
+                hotel.getDireccion()
+        );
+
+        json.put(
+                "telefono",
+                hotel.getTelefono()
+        );
+
+        json.put(
+                "calificacionPromedio",
+                hotel.getCalificacionPromedio()
+        );
+
+        json.put(
+                "cuartosDisponibles",
+                hotel.getCuartosDisponibles()
+        );
+
+        json.put(
+                "estado",
+                hotel.getEstado()
+        );
+
         return json;
     }
 
     private Map<String, Object> cuartoAJson(CuartoHotel cuarto) {
-        Map<String, Object> json = new LinkedHashMap<>();
-        json.put("idCuartoHotel", cuarto.getIdCuartoHotel());
-        json.put("numeroCuarto", cuarto.getNumeroCuarto());
-        json.put("cantidadPersonas", cuarto.getCantidadPersonas());
-        json.put("precioNoche", cuarto.getPrecioNoche());
-        json.put("estado", cuarto.getEstado());
+
+        Map<String, Object> json
+                = new LinkedHashMap<>();
+
+        json.put(
+                "idCuartoHotel",
+                cuarto.getIdCuartoHotel()
+        );
+
+        json.put(
+                "numeroCuarto",
+                cuarto.getNumeroCuarto()
+        );
+
+        json.put(
+                "cantidadPersonas",
+                cuarto.getCantidadPersonas()
+        );
+
+        json.put(
+                "precioNoche",
+                cuarto.getPrecioNoche()
+        );
+
+        json.put(
+                "estado",
+                cuarto.getEstado()
+        );
 
         if (cuarto.getTipoCuarto() != null) {
-            json.put("idTipoCuarto", cuarto.getTipoCuarto().getIdTipoCuarto());
-            json.put("tipoCuarto", cuarto.getTipoCuarto().getNombreTipo());
-        }
 
-        String imagen = null;
-        if (cuarto.getImagenes() != null && !cuarto.getImagenes().isEmpty()) {
-            ImagenCuarto primera = cuarto.getImagenes().getFirst();
-            imagen = primera.getUrlImagen();
+            json.put(
+                    "idTipoCuarto",
+                    cuarto.getTipoCuarto().getIdTipoCuarto()
+            );
+            json.put(
+                    "tipoCuarto",
+                    cuarto.getTipoCuarto().getNombreTipo()
+            );
         }
-        json.put("imagen", imagen);
-
+        Integer idImagen = null;
+        if (cuarto.getImagenes() != null
+                && !cuarto.getImagenes().isEmpty()) {
+            ImagenCuarto primera
+                    = cuarto.getImagenes().getFirst();
+            idImagen
+                    = primera.getIdImagen();
+        }
+        json.put(
+                "idImagen",
+                idImagen
+        );
+        json.put(
+                "tieneImagen",
+                idImagen != null
+        );
         return json;
     }
 
@@ -154,4 +240,163 @@ public class HotelController {
 
         return json;
     }
+
+    @GetMapping("/imagen/{idHotel}")
+    @ResponseBody
+    public ResponseEntity<byte[]> obtenerImagenHotel(
+            @PathVariable Integer idHotel) {
+
+        Hotel hotel
+                = hotelService.buscarPorId(idHotel)
+                        .orElse(null);
+
+        if (hotel == null
+                || hotel.getImagenPrincipal() == null
+                || hotel.getImagenPrincipal().length == 0) {
+
+            return ResponseEntity.notFound().build();
+        }
+
+        String tipo
+                = hotel.getTipoImagenPrincipal();
+
+        if (tipo == null || tipo.isBlank()) {
+            tipo = "image/jpeg";
+        }
+
+        return ResponseEntity
+                .ok()
+                .header(
+                        "Content-Type",
+                        tipo
+                )
+                .body(
+                        hotel.getImagenPrincipal()
+                );
+    }
+
+    @PostMapping("/hoteles/guardar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> guardarHotel(
+            @RequestParam(
+                    name = "idHotel",
+                    required = false
+            ) Integer idHotel,
+            @RequestParam String nombre,
+            @RequestParam(
+                    required = false
+            ) String descripcion,
+            @RequestParam(
+                    name = "imagenPrincipal",
+                    required = false
+            ) MultipartFile imagenPrincipal,
+            @RequestParam(
+                    required = false
+            ) String provincia,
+            @RequestParam(
+                    required = false
+            ) String canton,
+            @RequestParam(
+                    required = false
+            ) String direccion,
+            @RequestParam(
+                    required = false
+            ) String telefono,
+            @RequestParam(
+                    required = false,
+                    defaultValue = "0"
+            ) BigDecimal calificacionPromedio,
+            @RequestParam(
+                    required = false,
+                    defaultValue = "0"
+            ) Integer cuartosDisponibles,
+            @RequestParam String estado) {
+
+        try {
+
+            System.out.println(
+                    "===== ENTRÓ A guardarHotel ====="
+            );
+
+            System.out.println(
+                    "Nombre: " + nombre
+            );
+
+            System.out.println(
+                    "Estado: " + estado
+            );
+
+            System.out.println(
+                    "ID Hotel: " + idHotel
+            );
+
+            System.out.println(
+                    "Imagen recibida: "
+                    + (imagenPrincipal != null
+                    && !imagenPrincipal.isEmpty())
+            );
+
+            if (idHotel == null) {
+
+                hotelService.insertarHotel(
+                        nombre,
+                        descripcion,
+                        imagenPrincipal,
+                        provincia,
+                        canton,
+                        direccion,
+                        telefono,
+                        calificacionPromedio,
+                        cuartosDisponibles,
+                        estado
+                );
+
+                return ResponseEntity.ok(
+                        Map.of(
+                                "mensaje",
+                                "Hotel registrado correctamente."
+                        )
+                );
+
+            } else {
+
+                hotelService.actualizarHotel(
+                        idHotel,
+                        nombre,
+                        descripcion,
+                        imagenPrincipal,
+                        provincia,
+                        canton,
+                        direccion,
+                        telefono,
+                        calificacionPromedio,
+                        cuartosDisponibles,
+                        estado
+                );
+
+                return ResponseEntity.ok(
+                        Map.of(
+                                "mensaje",
+                                "Hotel actualizado correctamente."
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            Map.of(
+                                    "error",
+                                    e.getMessage() != null
+                                    ? e.getMessage()
+                                    : "Error al guardar el hotel."
+                            )
+                    );
+        }
+    }
+
 }

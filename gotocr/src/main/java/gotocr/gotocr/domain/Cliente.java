@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -32,8 +33,13 @@ public class Cliente {
     @Column(name = "contrasena", nullable = false, length = 255)
     private String contrasena;
 
-    @Column(name = "imagenPerfil", length = 300)
-    private String imagenPerfil;
+    @Lob
+    @JsonIgnore
+    @Column(name = "imagenPerfil", columnDefinition = "MEDIUMBLOB")
+    private byte[] imagenPerfil;
+
+    @Column(name = "tipoImagenPerfil", length = 100)
+    private String tipoImagenPerfil;
 
     @Column(name = "tokenConfirmacion", length = 255)
     private String tokenConfirmacion;

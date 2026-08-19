@@ -42,4 +42,6 @@ public interface ImagenCuartoRepository extends JpaRepository<ImagenCuarto, Inte
     List<ImagenCuarto> buscarPorCuarto(
             @Param("idCuartoHotel") Integer idCuartoHotel
     );
+
+    
 }

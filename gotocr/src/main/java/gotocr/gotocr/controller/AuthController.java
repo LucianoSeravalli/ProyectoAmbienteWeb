@@ -31,8 +31,8 @@ public class AuthController {
 
         try {
             Cliente cliente = clienteService.buscarPorCorreo(correo)
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("El correo ingresado no está registrado.")
+                    .orElseThrow(()
+                            -> new IllegalArgumentException("El correo ingresado no está registrado.")
                     );
 
             // Para el proyecto académico todavía se compara el texto recibido.
@@ -67,31 +67,42 @@ public class AuthController {
             Model model) {
 
         try {
+
             if (!contrasena.equals(confirmarContrasena)) {
-                throw new IllegalArgumentException("Las contraseñas no coinciden.");
+                throw new IllegalArgumentException(
+                        "Las contraseñas no coinciden."
+                );
             }
 
-            Rol rolCliente = rolService.buscarPorNombre("CLIENTE")
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
+            Rol rolCliente
+                    = rolService.buscarPorNombre("CLIENTE")
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
                                     "No existe el rol CLIENTE. Debe registrarlo primero en la base de datos."
                             )
-                    );
+                            );
 
             clienteService.insertarCliente(
-                    1,
+                    rolCliente.getIdRol(),
                     nombre,
                     apellido,
                     correo,
                     contrasena,
-                    null,
-                    null,
-                    false
+                    null, // imagenPerfil
+                    null, // tipoImagenPerfil
+                    null, // tokenConfirmacion
+                    false // correoVerificado
             );
 
             return "redirect:/login?registroExitoso";
+
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+
+            model.addAttribute(
+                    "error",
+                    e.getMessage()
+            );
+
             return "registro";
         }
     }

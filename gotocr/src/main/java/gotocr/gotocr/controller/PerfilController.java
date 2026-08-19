@@ -49,15 +49,26 @@ public class PerfilController {
             @RequestParam String correo,
             HttpSession session) {
 
-        Integer idCliente = (Integer) session.getAttribute("idCliente");
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
-            return respuesta(HttpStatus.UNAUTHORIZED, false, "Debe iniciar sesión.");
+            return respuesta(
+                    HttpStatus.UNAUTHORIZED,
+                    false,
+                    "Debe iniciar sesión."
+            );
         }
 
         try {
-            Cliente cliente = clienteService.buscarPorId(idCliente)
-                    .orElseThrow(() -> new IllegalArgumentException("El cliente no existe."));
+
+            Cliente cliente
+                    = clienteService.buscarPorId(idCliente)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cliente no existe."
+                            )
+                            );
 
             clienteService.actualizarCliente(
                     cliente.getIdCliente(),
@@ -67,13 +78,24 @@ public class PerfilController {
                     correo,
                     cliente.getContrasena(),
                     cliente.getImagenPerfil(),
+                    cliente.getTipoImagenPerfil(),
                     cliente.getTokenConfirmacion(),
                     cliente.getCorreoVerificado()
             );
 
-            return respuesta(HttpStatus.OK, true, "Perfil actualizado correctamente.");
+            return respuesta(
+                    HttpStatus.OK,
+                    true,
+                    "Perfil actualizado correctamente."
+            );
+
         } catch (IllegalArgumentException e) {
-            return respuesta(HttpStatus.BAD_REQUEST, false, e.getMessage());
+
+            return respuesta(
+                    HttpStatus.BAD_REQUEST,
+                    false,
+                    e.getMessage()
+            );
         }
     }
 
@@ -85,26 +107,43 @@ public class PerfilController {
             @RequestParam String confirmarContrasena,
             HttpSession session) {
 
-        Integer idCliente = (Integer) session.getAttribute("idCliente");
+        Integer idCliente
+                = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
-            return respuesta(HttpStatus.UNAUTHORIZED, false, "Debe iniciar sesión.");
+            return respuesta(
+                    HttpStatus.UNAUTHORIZED,
+                    false,
+                    "Debe iniciar sesión."
+            );
         }
 
         try {
-            Cliente cliente = clienteService.buscarPorId(idCliente)
-                    .orElseThrow(() -> new IllegalArgumentException("El cliente no existe."));
+
+            Cliente cliente
+                    = clienteService.buscarPorId(idCliente)
+                            .orElseThrow(()
+                                    -> new IllegalArgumentException(
+                                    "El cliente no existe."
+                            )
+                            );
 
             if (!cliente.getContrasena().equals(contrasenaActual)) {
-                throw new IllegalArgumentException("La contraseña actual es incorrecta.");
+                throw new IllegalArgumentException(
+                        "La contraseña actual es incorrecta."
+                );
             }
 
             if (!nuevaContrasena.equals(confirmarContrasena)) {
-                throw new IllegalArgumentException("Las nuevas contraseñas no coinciden.");
+                throw new IllegalArgumentException(
+                        "Las nuevas contraseñas no coinciden."
+                );
             }
 
             if (nuevaContrasena.trim().isEmpty()) {
-                throw new IllegalArgumentException("La nueva contraseña es obligatoria.");
+                throw new IllegalArgumentException(
+                        "La nueva contraseña es obligatoria."
+                );
             }
 
             clienteService.actualizarCliente(
@@ -115,13 +154,24 @@ public class PerfilController {
                     cliente.getCorreo(),
                     nuevaContrasena,
                     cliente.getImagenPerfil(),
+                    cliente.getTipoImagenPerfil(),
                     cliente.getTokenConfirmacion(),
                     cliente.getCorreoVerificado()
             );
 
-            return respuesta(HttpStatus.OK, true, "Contraseña actualizada correctamente.");
+            return respuesta(
+                    HttpStatus.OK,
+                    true,
+                    "Contraseña actualizada correctamente."
+            );
+
         } catch (IllegalArgumentException e) {
-            return respuesta(HttpStatus.BAD_REQUEST, false, e.getMessage());
+
+            return respuesta(
+                    HttpStatus.BAD_REQUEST,
+                    false,
+                    e.getMessage()
+            );
         }
     }
 

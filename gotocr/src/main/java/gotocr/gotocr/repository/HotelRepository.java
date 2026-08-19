@@ -1,6 +1,4 @@
-
 package gotocr.gotocr.repository;
-
 
 import gotocr.gotocr.domain.Hotel;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +17,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
     void insertarHotel(
             @Param("p_nombre") String nombre,
             @Param("p_descripcion") String descripcion,
-            @Param("p_imagenPrincipal") String imagenPrincipal,
+            @Param("p_imagenPrincipal") byte[] imagenPrincipal,
+            @Param("p_tipoImagenPrincipal") String tipoImagenPrincipal,
             @Param("p_provincia") String provincia,
             @Param("p_canton") String canton,
             @Param("p_direccion") String direccion,
@@ -35,7 +34,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
             @Param("p_idHotel") Integer idHotel,
             @Param("p_nombre") String nombre,
             @Param("p_descripcion") String descripcion,
-            @Param("p_imagenPrincipal") String imagenPrincipal,
+            @Param("p_imagenPrincipal") byte[] imagenPrincipal,
+            @Param("p_tipoImagenPrincipal") String tipoImagenPrincipal,
             @Param("p_provincia") String provincia,
             @Param("p_canton") String canton,
             @Param("p_direccion") String direccion,
@@ -52,7 +52,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
     );
 
     // CONSULTAS
-
     @Query("SELECT h FROM Hotel h")
     List<Hotel> listarHoteles();
 
@@ -99,5 +98,18 @@ public interface HotelRepository extends JpaRepository<Hotel, Integer> {
     """)
     List<Hotel> buscarPorCalificacionMinima(
             @Param("calificacion") BigDecimal calificacion
+    );
+
+    @Procedure(
+            procedureName
+            = "sp_recalcular_calificacion_hotel"
+    )
+    void recalcularCalificacionHotel(
+            @Param("p_idHotel") Integer idHotel
+    );
+
+    @Procedure(procedureName = "sp_recalcular_cuartos_hotel")
+    void recalcularCuartosHotel(
+            @Param("p_idHotel") Integer idHotel
     );
 }

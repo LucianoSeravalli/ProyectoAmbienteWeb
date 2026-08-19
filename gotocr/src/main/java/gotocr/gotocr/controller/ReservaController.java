@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,16 +27,18 @@ public class ReservaController {
     private final ClienteService clienteService;
 
     // =====================================================
-    // MOSTRAR VISTA
+    // MOSTRAR VISTA DE RESERVA
     // =====================================================
     @GetMapping("/{idCuarto}")
-    public String mostrarReserva(
+    public String reserva(
             @PathVariable Integer idCuarto,
+            @RequestParam String fechaEntrada,
+            @RequestParam String fechaSalida,
+            @RequestParam(defaultValue = "1") Integer cantidadPersonas,
             Model model,
             HttpSession session) {
 
-        Integer idCliente
-                = (Integer) session.getAttribute("idCliente");
+        Integer idCliente  = (Integer) session.getAttribute("idCliente");
 
         if (idCliente == null) {
             return "redirect:/login";
@@ -48,6 +49,20 @@ public class ReservaController {
                 idCuarto
         );
 
+        model.addAttribute(
+                "fechaEntrada",
+                fechaEntrada
+        );
+
+        model.addAttribute(
+                "fechaSalida",
+                fechaSalida
+        );
+
+        model.addAttribute(
+                "cantidadPersonas",
+                cantidadPersonas
+        );
         return "reserva";
     }
 
@@ -168,128 +183,189 @@ public class ReservaController {
         }
     }
 
-    // =====================================================
-    // CONFIRMAR RESERVA DESDE JAVASCRIPT
-    // =====================================================
+
     @PostMapping("/confirmar")
     @ResponseBody
-    public ResponseEntity<?> confirmarReserva(
+    public ResponseEntity<Map<String, Object>> confirmarReserva(
             @RequestParam Integer idCuartoHotel,
-            @RequestParam LocalDate fechaEntrada,
-            @RequestParam LocalDate fechaSalida,
+            @RequestParam String fechaEntrada,
+            @RequestParam String fechaSalida,
             @RequestParam Integer cantidadPersonas,
             @RequestParam String metodoPago,
             HttpSession session) {
 
-        Integer idCliente
-                = (Integer) session.getAttribute("idCliente");
-
-        if (idCliente == null) {
-
-            return ResponseEntity
-                    .status(401)
-                    .body(Map.of(
-                            "error",
-                            "Debe iniciar sesión"
-                    ));
-        }
-
         try {
+
+            Integer idCliente
+                    = (Integer) session.getAttribute(
+                            "idCliente"
+                    );
+
+            if (idCliente == null) {
+
+                return ResponseEntity
+                        .status(401)
+                        .body(
+                                Map.of(
+                                        "error",
+                                        "Debe iniciar sesión."
+                                )
+                        );
+            }
 
             CuartoHotel cuarto
                     = cuartoHotelService
                             .buscarPorId(idCuartoHotel)
                             .orElseThrow(()
                                     -> new IllegalArgumentException(
-                                    "El cuarto seleccionado no existe"
+                                    "El cuarto seleccionado no existe."
                             )
                             );
 
-            // =============================
-            // DISPONIBILIDAD
-            // =============================
-            if (!"DISPONIBLE".equalsIgnoreCase(
-                    cuarto.getEstado())) {
+            if (cuarto.getHotel() == null) {
 
                 throw new IllegalArgumentException(
-                        "El cuarto no se encuentra disponible"
+                        "El cuarto no tiene un hotel asociado."
                 );
             }
 
-            // =============================
-            // CAPACIDAD
-            // =============================
-            if (cantidadPersonas
-                    > cuarto.getCantidadPersonas()) {
+            Integer idHotel
+                    = cuarto.getHotel()
+                            .getIdHotel();
 
-                throw new IllegalArgumentException(
-                        "La cantidad de huéspedes supera la capacidad del cuarto"
-                );
-            }
+            LocalDate entrada
+                    = LocalDate.parse(
+                            fechaEntrada
+                    );
 
-            // =============================
-            // FECHAS
-            // =============================
-            if (fechaEntrada == null
-                    || fechaSalida == null) {
-
-                throw new IllegalArgumentException(
-                        "Debe indicar las fechas de entrada y salida"
-                );
-            }
-
-            if (!fechaSalida.isAfter(fechaEntrada)) {
-
-                throw new IllegalArgumentException(
-                        "La fecha de salida debe ser posterior a la fecha de entrada"
-                );
-            }
-
-            long noches
-                    = ChronoUnit.DAYS.between(
-                            fechaEntrada,
+            LocalDate salida
+                    = LocalDate.parse(
                             fechaSalida
                     );
 
-            // =============================
-            // PRECIO REAL DESDE LA BD
-            // =============================
-            BigDecimal precioTotal
-                    = cuarto.getPrecioNoche()
-                            .multiply(
-                                    BigDecimal.valueOf(noches)
+            long noches
+                    = java.time.temporal.ChronoUnit.DAYS
+                            .between(
+                                    entrada,
+                                    salida
                             );
 
+            if (noches <= 0) {
+
+                throw new IllegalArgumentException(
+                        "La fecha de salida debe ser posterior a la fecha de entrada."
+                );
+            }
+
+            if (cantidadPersonas <= 0) {
+
+                throw new IllegalArgumentException(
+                        "La cantidad de personas debe ser mayor a cero."
+                );
+            }
+
+            if (cuarto.getCantidadPersonas() != null
+                    && cantidadPersonas > cuarto.getCantidadPersonas()) {
+
+                throw new IllegalArgumentException(
+                        "La cantidad de personas supera la capacidad del cuarto."
+                );
+            }
+
+            BigDecimal precioNoche
+                    = cuarto.getPrecioNoche();
+
+            if (precioNoche == null) {
+
+                throw new IllegalArgumentException(
+                        "El cuarto no tiene un precio válido."
+                );
+            }
+
+            BigDecimal precioTotal
+                    = precioNoche.multiply(
+                            BigDecimal.valueOf(
+                                    noches
+                            )
+                    );
+
+            String estadoReserva
+                    = "CONFIRMADA";
+
+            System.out.println(
+                    "===== CONFIRMAR RESERVA ====="
+            );
+
+            System.out.println(
+                    "Cliente: " + idCliente
+            );
+
+            System.out.println(
+                    "Hotel: " + idHotel
+            );
+
+            System.out.println(
+                    "Cuarto: " + idCuartoHotel
+            );
+
+            System.out.println(
+                    "Entrada: " + entrada
+            );
+
+            System.out.println(
+                    "Salida: " + salida
+            );
+
+            System.out.println(
+                    "Personas: " + cantidadPersonas
+            );
+
+            System.out.println(
+                    "Noches: " + noches
+            );
+
+            System.out.println(
+                    "Precio total: " + precioTotal
+            );
+
+            System.out.println(
+                    "Pago: " + metodoPago
+            );
+
             Integer idReserva
-                    = reservaService.confirmarReserva(
+                    = reservaService.insertarReserva(
                             idCliente,
-                            cuarto.getHotel().getIdHotel(),
-                            cuarto.getIdCuartoHotel(),
-                            fechaEntrada,
-                            fechaSalida,
+                            idHotel,
+                            idCuartoHotel,
+                            entrada,
+                            salida,
                             cantidadPersonas,
                             precioTotal,
+                            estadoReserva,
                             metodoPago
                     );
 
             return ResponseEntity.ok(
                     Map.of(
-                            "mensaje",
-                            "Reserva realizada correctamente",
                             "idReserva",
-                            idReserva
+                            idReserva,
+                            "mensaje",
+                            "Reserva realizada correctamente."
                     )
             );
 
-        } catch (IllegalArgumentException
-                | IllegalStateException e) {
+        } catch (Exception e) {
+
+            e.printStackTrace();
 
             return ResponseEntity
                     .badRequest()
                     .body(
                             Map.of(
                                     "error",
-                                    e.getMessage()
+                                    e.getMessage() != null
+                                    ? e.getMessage()
+                                    : "No fue posible realizar la reserva."
                             )
                     );
         }
