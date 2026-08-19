@@ -74,6 +74,106 @@
                         <h3 class="h5 mt-5 mb-3">Cuartos disponibles</h3><div id="contenedorCuartos"><p class="text-muted">Cargando cuartos...</p></div>
                         <!-- RESEÑAS -->
                         <h3 class="h5 mt-5 mb-3">Reseñas de huéspedes</h3><div id="contenedorResenas"><p class="text-muted">Cargando reseñas...</p></div>
+                        <div class="gcr-form-card mt-4">
+
+                            <h3 class="h6 mb-3">
+
+                                <i class="bi bi-star"></i>
+
+                                Escribir una reseña
+
+                            </h3>
+
+
+                            <div
+                                id="mensajeResena"
+                                class="alert d-none">
+                            </div>
+
+
+                            <form id="formResena">
+
+                                <div class="mb-3">
+
+                                    <label
+                                        for="calificacionResena"
+                                        class="form-label fw-bold">
+
+                                        Calificación
+
+                                    </label>
+
+
+                                    <select
+                                        id="calificacionResena"
+                                        name="calificacion"
+                                        class="form-select"
+                                        required>
+
+                                        <option value="">
+                                            Seleccione
+                                        </option>
+
+                                        <option value="5">
+                                            5 - Excelente
+                                        </option>
+
+                                        <option value="4">
+                                            4 - Muy bueno
+                                        </option>
+
+                                        <option value="3">
+                                            3 - Bueno
+                                        </option>
+
+                                        <option value="2">
+                                            2 - Regular
+                                        </option>
+
+                                        <option value="1">
+                                            1 - Malo
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="mb-3">
+
+                                    <label
+                                        for="comentarioResena"
+                                        class="form-label fw-bold">
+
+                                        Comentario
+
+                                    </label>
+
+
+                                    <textarea
+                                        id="comentarioResena"
+                                        name="comentario"
+                                        class="form-control"
+                                        maxlength="500"
+                                        rows="3"
+                                        placeholder="Contanos cómo fue tu estadía..."></textarea>
+
+                                </div>
+
+
+                                <button
+                                    type="submit"
+                                    class="btn-gotocr btn-gotocr-primary">
+
+                                    <i class="bi bi-send"></i>
+
+                                    Guardar reseña
+
+                                </button>
+
+                            </form>
+
+                        </div>
                     </div>
                     <!-- RESUMEN LATERAL -->
                     <div class="col-lg-4">

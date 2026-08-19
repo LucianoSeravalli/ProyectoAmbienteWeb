@@ -116,4 +116,15 @@ public class TipoCuartoService {
             throw new IllegalArgumentException(mensaje);
         }
     }
+    
+
+
+    public List<TipoCuarto> listarTipos() {
+
+        return tipoCuartoRepository
+                .findAll();
+    }
+
+
+    
 }

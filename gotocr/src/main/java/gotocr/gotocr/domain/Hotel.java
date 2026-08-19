@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -22,8 +23,13 @@ public class Hotel {
     @Column(name = "descripcion", length = 500)
     private String descripcion;
 
-    @Column(name = "imagenPrincipal", length = 300)
-    private String imagenPrincipal;
+    @Lob
+    @JsonIgnore
+    @Column(name = "imagenPrincipal", columnDefinition = "MEDIUMBLOB")
+    private byte[] imagenPrincipal;
+
+    @Column(name = "tipoImagenPrincipal", length = 100)
+    private String tipoImagenPrincipal;
 
     @Column(name = "provincia", length = 100)
     private String provincia;

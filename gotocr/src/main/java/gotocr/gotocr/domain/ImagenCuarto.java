@@ -1,6 +1,6 @@
-
 package gotocr.gotocr.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +18,19 @@ public class ImagenCuarto {
     @JoinColumn(name = "idCuartoHotel", nullable = false)
     private CuartoHotel cuartoHotel;
 
-    @Column(name = "urlImagen", nullable = false, length = 500)
-    private String urlImagen;
+    @Lob
+    @JsonIgnore
+    @Column(
+            name = "imagen",
+            nullable = false,
+            columnDefinition = "MEDIUMBLOB"
+    )
+    private byte[] imagen;
+
+    @Column(
+            name = "tipoImagen",
+            nullable = false,
+            length = 100
+    )
+    private String tipoImagen;
 }

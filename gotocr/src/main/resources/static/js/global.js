@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     configurarMenuMovil();
-    cargarEstadoSesion();
+    cargarSesionHeader();
 });
 
 function configurarMenuMovil() {
@@ -15,19 +15,28 @@ function configurarMenuMovil() {
     }
 }
 
-async function cargarEstadoSesion() {
+async function cargarSesionHeader() {
     try {
         const respuesta = await fetch("/sesion/datos");
 
-        if (!respuesta.ok) return;
+        if (!respuesta.ok) {
+            return;
+        }
 
         const sesion = await respuesta.json();
+
+        if (!sesion.autenticado) {
+            return;
+        }
+
+        mostrarUsuarioSesion(sesion);
 
         if (sesion.esAdmin) {
             agregarEnlaceAdministracion();
         }
+
     } catch (error) {
-        console.error("No fue posible consultar la sesión:", error);
+        console.error("Error al cargar la sesión:", error);
     }
 }
 
@@ -51,15 +60,104 @@ function agregarEnlaceAdministracion() {
     nav.appendChild(enlace);
 }
 
+function mostrarUsuarioSesion(sesion) {
+    const acciones = document.querySelector(".gcr-actions");
+
+    if (!acciones) {
+        return;
+    }
+
+    const foto = rutaImagenPerfil(
+        sesion.idCliente,
+        sesion.tieneImagenPerfil
+    );
+
+    acciones.innerHTML = `
+        <a
+            href="/perfil"
+            class="gcr-user-session"
+        >
+            <span class="gcr-user-name">
+                ${escaparHtml(sesion.nombre)} ${escaparHtml(sesion.apellido)}
+            </span>
+
+            <img
+                src="${foto}"
+                alt="Foto de perfil"
+                class="gcr-user-avatar"
+                onerror="
+                    this.onerror=null;
+                    this.src='/img/perfil-default.png';
+                "
+            >
+        </a>
+
+        <a
+            href="/logout"
+            class="btn-gotocr btn-gotocr-outline"
+        >
+            Cerrar sesión
+        </a>
+    `;
+}
+
+/*
+ * Las imágenes reales ya no llegan como URLs en el JSON.
+ * El navegador las solicita a endpoints que devuelven el BLOB.
+ */
+function rutaImagenPerfil(idCliente, tieneImagenPerfil) {
+    return tieneImagenPerfil && idCliente
+        ? `/perfil/imagen/${idCliente}`
+        : "/img/perfil-default.png";
+}
+
+function rutaImagenHotel(idHotel, tieneImagen) {
+    return tieneImagen && idHotel
+        ? `/hoteles/imagen/${idHotel}`
+        : "/img/hotel-default.jpg";
+}
+
+function rutaImagenCuarto(idImagen, rutaAlternativa = "/img/cuarto-default.jpg") {
+    return idImagen
+        ? `/imagenes-cuartos/${idImagen}`
+        : rutaAlternativa;
+}
+
+/*
+ * Se conserva para recursos estáticos que todavía puedan llegar como ruta.
+ * No usar esta función para los BLOB de CLIENTE/HOTEL/IMAGENCUARTO.
+ */
+function rutaImagen(url) {
+    if (!url) {
+        return "/img/logo.png";
+    }
+
+    if (
+        url.startsWith("http://")
+        || url.startsWith("https://")
+        || url.startsWith("/")
+    ) {
+        return url;
+    }
+
+    return `/${url}`;
+}
+
 function mostrarMensaje(elemento, mensaje, tipo = "danger") {
-    if (!elemento) return;
+    if (!elemento) {
+        return;
+    }
+
     elemento.className = `alert alert-${tipo}`;
     elemento.textContent = mensaje;
     elemento.classList.remove("d-none");
 }
 
 function ocultarMensaje(elemento) {
-    if (!elemento) return;
+    if (!elemento) {
+        return;
+    }
+
     elemento.classList.add("d-none");
 }
 
@@ -74,6 +172,7 @@ function escaparHtml(valor) {
 
 function formatoMoneda(valor) {
     const numero = Number(valor ?? 0);
+
     return new Intl.NumberFormat("es-CR", {
         style: "currency",
         currency: "USD"
@@ -81,96 +180,15 @@ function formatoMoneda(valor) {
 }
 
 function formatoFecha(fecha) {
-    if (!fecha) return "";
+    if (!fecha) {
+        return "";
+    }
+
     const d = new Date(`${fecha}T00:00:00`);
+
     return new Intl.DateTimeFormat("es-CR", {
         day: "2-digit",
         month: "short",
         year: "numeric"
     }).format(d);
 }
-
-function rutaImagen(url) {
-    if (!url) return "/img/logo.png";
-
-    if (
-        url.startsWith("http://")
-        || url.startsWith("https://")
-        || url.startsWith("/")
-    ) {
-        return url;
-    }
-
-    return `/${url}`;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    cargarSesionHeader();
-});
-
-async function cargarSesionHeader() {
-
-    try {
-
-        const respuesta = await fetch("/sesion/datos");
-
-        if (!respuesta.ok) {
-            return;
-        }
-
-        const sesion = await respuesta.json();
-
-        if (sesion.autenticado) {
-            mostrarUsuarioSesion(sesion);
-
-            if (sesion.esAdmin) {
-                agregarEnlaceAdministracion();
-            }
-        }
-
-    } catch (error) {
-        console.error("Error al cargar sesión:", error);
-    }
-}
-
-
-function mostrarUsuarioSesion(sesion) {
-
-    const contenedorAcciones =
-        document.querySelector(".gcr-actions");
-
-    if (!contenedorAcciones) {
-        return;
-    }
-
-    const imagen =
-        sesion.imagenPerfil && sesion.imagenPerfil.trim() !== ""
-            ? sesion.imagenPerfil
-            : "/img/perfil-default.png";
-
-    contenedorAcciones.innerHTML = `
-        <a
-            href="/perfil"
-            class="gcr-user-session"
-            title="Ir a mi perfil"
-        >
-            <span class="gcr-user-name">
-                ${sesion.nombre} ${sesion.apellido}
-            </span>
-
-            <img
-                src="${imagen}"
-                alt="Foto de perfil de ${sesion.nombre}"
-                class="gcr-user-avatar"
-            >
-        </a>
-
-        <a
-            href="/logout"
-            class="btn-gotocr btn-gotocr-outline"
-        >
-            Cerrar sesión
-        </a>
-    `;
-}
-

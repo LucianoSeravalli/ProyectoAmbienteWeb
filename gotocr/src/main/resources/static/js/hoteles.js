@@ -11,7 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function cargarHoteles() {
     try {
         const respuesta = await fetch("/hoteles/datos");
-        if (!respuesta.ok) throw new Error("No se pudieron obtener los hoteles.");
+        if (!respuesta.ok)
+            throw new Error("No se pudieron obtener los hoteles.");
 
         hotelesOriginales = await respuesta.json();
         aplicarFiltros();
@@ -23,49 +24,162 @@ async function cargarHoteles() {
 }
 
 function aplicarFiltros() {
-    const provincia = document.getElementById("filtroProvincia")?.value ?? "";
-    const precioMax = Number(document.getElementById("filtroPrecio")?.value ?? 500);
-    const calificacion = Number(document.getElementById("filtroCalificacion")?.value || 0);
-    const orden = document.getElementById("ordenHoteles")?.value ?? "recomendados";
 
-    const tiposSeleccionados = [...document.querySelectorAll(
-        "#tipoEstandar:checked, #tipoJunior:checked, #tipoSuite:checked"
-    )].map(x => x.value.toLowerCase());
+    const provincia =
+            document.getElementById("filtroProvincia")?.value ?? "";
 
-    let hoteles = hotelesOriginales.filter(hotel => {
-        const coincideProvincia =
-            !provincia || (hotel.provincia || "").toLowerCase() === provincia.toLowerCase();
+    const precioMax =
+            Number(
+                    document.getElementById("filtroPrecio")?.value ?? 500
+                    );
 
-        const coincideCalificacion =
-            Number(hotel.calificacionPromedio || 0) >= calificacion;
+    const calificacion =
+            Number(
+                    document.getElementById("filtroCalificacion")?.value || 0
+                    );
 
-        const precioMinimo = hotel.precioMinimo == null ? 0 : Number(hotel.precioMinimo);
-        const coincidePrecio = precioMinimo === 0 || precioMinimo <= precioMax;
+    const orden =
+            document.getElementById("ordenHoteles")?.value
+            ?? "recomendados";
 
-        const tipos = (hotel.tiposCuarto || []).map(t => t.toLowerCase());
-        const coincideTipo =
-            tiposSeleccionados.length === 0 ||
-            tiposSeleccionados.some(tipo => tipos.includes(tipo));
 
-        return coincideProvincia && coincideCalificacion && coincidePrecio && coincideTipo;
-    });
+    const tiposSeleccionados =
+            [...document.querySelectorAll(
+                        "#tipoEstandar:checked, #tipoJunior:checked, #tipoSuite:checked"
+                        )]
+            .map(
+                    elemento =>
+                elemento.value.toLowerCase()
+            );
+
+
+    let hoteles =
+            hotelesOriginales.filter(hotel => {
+
+                const coincideProvincia =
+                        !provincia
+                        ||
+                        (hotel.provincia || "")
+                        .toLowerCase()
+                        ===
+                        provincia.toLowerCase();
+
+
+                const coincideCalificacion =
+                        Number(
+                                hotel.calificacionPromedio || 0
+                                )
+                        >=
+                        calificacion;
+
+
+                const precioMinimo =
+                        hotel.precioMinimo == null
+                        ? 0
+                        : Number(
+                                hotel.precioMinimo
+                                );
+
+
+                const coincidePrecio =
+                        precioMinimo === 0
+                        ||
+                        precioMinimo <= precioMax;
+
+
+                const tipos =
+                        (hotel.tiposCuarto || [])
+                        .map(
+                                tipo =>
+                            tipo.toLowerCase()
+                        );
+
+
+                /*
+                 * Si el hotel todavía no tiene cuartos,
+                 * permitimos que aparezca igualmente.
+                 */
+                const coincideTipo =
+                        tiposSeleccionados.length === 0
+                        ||
+                        tipos.length === 0
+                        ||
+                        tiposSeleccionados.some(
+                                tipo =>
+                            tipos.includes(tipo)
+                        );
+
+
+                return (
+                        coincideProvincia
+                        &&
+                        coincideCalificacion
+                        &&
+                        coincidePrecio
+                        &&
+                        coincideTipo
+                        );
+            });
+
 
     if (orden === "precioAsc") {
-        hoteles.sort((a, b) => Number(a.precioMinimo || Infinity) - Number(b.precioMinimo || Infinity));
+
+        hoteles.sort(
+                (a, b) =>
+            Number(
+                    a.precioMinimo
+                    ?? Infinity
+                    )
+                    -
+                    Number(
+                            b.precioMinimo
+                            ?? Infinity
+                            )
+        );
+
     } else if (orden === "precioDesc") {
-        hoteles.sort((a, b) => Number(b.precioMinimo || 0) - Number(a.precioMinimo || 0));
+
+        hoteles.sort(
+                (a, b) =>
+            Number(
+                    b.precioMinimo
+                    ?? 0
+                    )
+                    -
+                    Number(
+                            a.precioMinimo
+                            ?? 0
+                            )
+        );
+
     } else if (orden === "calificacion") {
-        hoteles.sort((a, b) => Number(b.calificacionPromedio || 0) - Number(a.calificacionPromedio || 0));
+
+        hoteles.sort(
+                (a, b) =>
+            Number(
+                    b.calificacionPromedio
+                    ?? 0
+                    )
+                    -
+                    Number(
+                            a.calificacionPromedio
+                            ?? 0
+                            )
+        );
     }
 
-    mostrarHoteles(hoteles);
+
+    mostrarHoteles(
+            hoteles
+            );
 }
 
 function mostrarHoteles(hoteles) {
     const contenedor = document.getElementById("contenedorHoteles");
     const cantidad = document.getElementById("cantidadHoteles");
 
-    if (cantidad) cantidad.textContent = hoteles.length;
+    if (cantidad)
+        cantidad.textContent = hoteles.length;
 
     if (!hoteles.length) {
         contenedor.innerHTML = `
@@ -78,15 +192,16 @@ function mostrarHoteles(hoteles) {
     contenedor.innerHTML = hoteles.map(hotel => {
         const ubicacion = [hotel.canton, hotel.provincia].filter(Boolean).join(", ");
         const precio = hotel.precioMinimo != null
-            ? `Desde <strong>${formatoMoneda(hotel.precioMinimo)}</strong>/noche`
-            : `${hotel.cuartosDisponibles ?? 0} cuartos disponibles`;
+                ? `Desde <strong>${formatoMoneda(hotel.precioMinimo)}</strong>/noche`
+                : `${hotel.cuartosDisponibles ?? 0} cuartos disponibles`;
 
         return `
             <div class="gcr-list-card mb-4">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="${escaparHtml(rutaImagen(hotel.imagenPrincipal))}"
-                             alt="${escaparHtml(hotel.nombre)}">
+                        <img src="${rutaImagenHotel(hotel.idHotel, hotel.tieneImagen)}"
+                             alt="${escaparHtml(hotel.nombre)}"
+                             onerror="this.onerror=null; this.src='/img/hotel-default.jpg';">
                     </div>
                     <div class="col-md-8 p-4 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start">

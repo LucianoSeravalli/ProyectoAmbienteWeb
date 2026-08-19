@@ -1,59 +1,852 @@
 let hotelesAdmin = [];
+let tiposCuartoAdmin = [];
+let cuartosAdmin = [];
 
-document.addEventListener("DOMContentLoaded", () => {
 
-    const form = document.getElementById("formHotel");
+document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+
+    console.log("ADMIN JS CARGADO");
+
+    const formHotel =
+            document.getElementById("formHotel");
+
+    const formCuarto =
+            document.getElementById("formCuarto");
+
     const buscar = document.getElementById("buscarHotel");
-    const btnNuevo = document.getElementById("btnNuevoHotel");
-    const btnCancelar = document.getElementById(
-        "btnCancelarEdicion"
+
+    const btnNuevo =
+            document.getElementById("btnNuevoHotel");
+
+    const btnCancelar =
+            document.getElementById(
+                    "btnCancelarEdicion"
+                    );
+
+    const btnCancelarCuarto =
+            document.getElementById(
+                    "btnCancelarCuarto"
+                    );
+
+    const selectHotelCuarto =
+            document.getElementById(
+                    "hotelCuarto"
+                    );
+
+
+    formHotel?.addEventListener(
+            "submit",
+            guardarHotel
+            );
+
+
+    formCuarto?.addEventListener(
+            "submit",
+            guardarCuarto
+            );
+
+
+    buscar?.addEventListener(
+            "input",
+            () => {
+        filtrarHoteles(
+                buscar.value
+                );
+    }
     );
 
-    form.addEventListener("submit", guardarHotel);
 
-    buscar.addEventListener("input", () => {
-        filtrarTabla(buscar.value);
-    });
+    btnNuevo?.addEventListener(
+            "click",
+            limpiarFormularioHotel
+            );
 
-    btnNuevo.addEventListener("click", limpiarFormulario);
-    btnCancelar.addEventListener("click", limpiarFormulario);
+
+    btnCancelar?.addEventListener(
+            "click",
+            limpiarFormularioHotel
+            );
+
+
+    btnCancelarCuarto?.addEventListener(
+            "click",
+            () => {
+        limpiarFormularioCuarto();
+    }
+    );
+
+
+    selectHotelCuarto?.addEventListener(
+            "change",
+            () => {
+
+        const idHotel =
+                Number(
+                        selectHotelCuarto.value
+                        );
+
+        if (idHotel) {
+            cargarCuartos(idHotel);
+        } else {
+            cuartosAdmin = [];
+            mostrarCuartos([]);
+        }
+    }
+    );
+
 
     cargarDashboard();
-});
+}
+);
+
 
 async function cargarDashboard() {
 
     await Promise.all([
         cargarResumen(),
-        cargarHoteles()
+        cargarHoteles(),
+        cargarTiposCuarto()
     ]);
 }
+
 
 async function cargarResumen() {
 
     try {
 
-        const respuesta = await fetch("/admin/resumen");
+        const respuesta =
+                await fetch(
+                        "/admin/resumen"
+                        );
 
         if (!respuesta.ok) {
             throw new Error(
-                "No fue posible cargar el resumen"
-            );
+                    "No se pudo cargar el resumen."
+                    );
         }
 
-        const datos = await respuesta.json();
+        const datos =
+                await respuesta.json();
+
 
         document.getElementById(
-            "totalHoteles"
-        ).textContent = datos.totalHoteles ?? 0;
+                "totalHoteles"
+                ).textContent =
+                datos.totalHoteles ?? 0;
+
 
         document.getElementById(
-            "hotelesActivos"
-        ).textContent = datos.hotelesActivos ?? 0;
+                "hotelesActivos"
+                ).textContent =
+                datos.hotelesActivos ?? 0;
+
 
         document.getElementById(
-            "cuartosDisponibles"
-        ).textContent = datos.cuartosDisponibles ?? 0;
+                "cuartosDisponibles"
+                ).textContent =
+                datos.cuartosDisponibles ?? 0;
+
+    } catch (error) {
+
+        console.error(
+                "Error resumen:",
+                error
+                );
+    }
+}
+
+
+async function cargarHoteles() {
+
+    const tabla =
+            document.getElementById(
+                    "tablaHoteles"
+                    );
+
+    try {
+
+        const respuesta =
+                await fetch(
+                        "/admin/hoteles"
+                        );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                    "No se pudieron cargar los hoteles."
+                    );
+        }
+
+
+        hotelesAdmin =
+                await respuesta.json();
+
+
+        console.log(
+                "Hoteles admin:",
+                hotelesAdmin
+                );
+
+
+        mostrarHoteles(
+                hotelesAdmin
+                );
+
+
+        llenarSelectHoteles();
+
+
+    } catch (error) {
+
+        console.error(
+                "Error hoteles:",
+                error
+                );
+
+
+        if (tabla) {
+
+            tabla.innerHTML = `
+                <tr>
+                    <td
+                        colspan="6"
+                        class="text-center text-danger py-5">
+
+                        ${escaparHtml(error.message)}
+
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+
+
+function mostrarHoteles(hoteles) {
+
+    const tabla =
+            document.getElementById(
+                    "tablaHoteles"
+                    );
+
+
+    if (!tabla) {
+        return;
+    }
+
+
+    if (!hoteles.length) {
+
+        tabla.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    class="text-center py-5">
+
+                    No hay hoteles registrados.
+
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    tabla.innerHTML =
+            hoteles.map(hotel => {
+
+                const ubicacion =
+                        [
+                            hotel.canton,
+                            hotel.provincia
+                        ]
+                        .filter(Boolean)
+                        .join(", ");
+
+
+                const imagen =
+                        hotel.tieneImagen
+                        ? `/hoteles/imagen/${hotel.idHotel}`
+                        : "/img/hotel-default.jpg";
+
+
+                return `
+                <tr>
+
+                    <td>
+
+                        <div class="admin-hotel-cell">
+
+                            <img
+                                class="admin-hotel-thumb"
+                                src="${imagen}"
+                                onerror="
+                                    this.onerror=null;
+                                    this.src='/img/hotel-default.jpg';
+                                ">
+
+                            <div>
+
+                                <strong>
+                                    ${escaparHtml(
+                        hotel.nombre
+                        )}
+                                </strong>
+
+                                <div class="admin-muted">
+                                    #${hotel.idHotel}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+                        ${escaparHtml(
+                        ubicacion
+                        || "Sin especificar"
+                        )}
+                    </td>
+
+
+                    <td>
+
+                        <i class="
+                            bi
+                            bi-star-fill
+                            text-warning
+                        "></i>
+
+                        ${Number(
+                        hotel.calificacionPromedio
+                        || 0
+                        ).toFixed(2)}
+
+                    </td>
+
+
+                    <td>
+                        ${hotel.cuartosDisponibles ?? 0}
+                    </td>
+
+
+                    <td>
+                        ${escaparHtml(
+                        hotel.estado || ""
+                        )}
+                    </td>
+
+
+                    <td class="text-end">
+
+                        <button
+                            type="button"
+                            class="admin-icon-button"
+                            title="Editar hotel"
+                            onclick="
+                                editarHotel(
+                                    ${hotel.idHotel}
+                                )
+                            ">
+
+                            <i class="bi bi-pencil"></i>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="admin-icon-button"
+                            title="Administrar cuartos"
+                            onclick="
+                                administrarCuartos(
+                                    ${hotel.idHotel}
+                                )
+                            ">
+
+                            <i class="bi bi-door-open"></i>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="
+                                admin-icon-button
+                                danger
+                            "
+                            title="Eliminar hotel"
+                            onclick="
+                                eliminarHotel(
+                                    ${hotel.idHotel}
+                                )
+                            ">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+            `;
+            })
+            .join("");
+}
+
+
+function filtrarHoteles(texto) {
+
+    const criterio =
+            texto
+            .trim()
+            .toLowerCase();
+
+
+    if (!criterio) {
+
+        mostrarHoteles(
+                hotelesAdmin
+                );
+
+        return;
+    }
+
+
+    const filtrados =
+            hotelesAdmin.filter(hotel => {
+
+                const datos =
+                        [
+                            hotel.nombre,
+                            hotel.provincia,
+                            hotel.canton,
+                            hotel.estado
+                        ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase();
+
+
+                return datos.includes(
+                        criterio
+                        );
+            });
+
+
+    mostrarHoteles(
+            filtrados
+            );
+}
+
+
+async function guardarHotel(evento) {
+
+    evento.preventDefault();
+
+
+    const formulario =
+            document.getElementById(
+                    "formHotel"
+                    );
+
+
+    const mensaje =
+            document.getElementById(
+                    "mensajeAdmin"
+                    );
+
+
+    const datos =
+            new FormData(
+                    formulario
+                    );
+
+
+    if (!datos.get("idHotel")) {
+
+        datos.delete(
+                "idHotel"
+                );
+    }
+
+
+    const imagen =
+            document.getElementById(
+                    "imagenPrincipal"
+                    )?.files?.[0];
+
+
+    if (imagen) {
+
+        const permitidos = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+
+        if (
+                !permitidos.includes(
+                        imagen.type
+                        )
+                ) {
+
+            mostrarMensaje(
+                    mensaje,
+                    "La imagen debe ser JPG, PNG o WEBP."
+                    );
+
+            return;
+        }
+
+
+        if (
+                imagen.size
+                >
+                5 * 1024 * 1024
+                ) {
+
+            mostrarMensaje(
+                    mensaje,
+                    "La imagen supera los 5 MB."
+                    );
+
+            return;
+        }
+    }
+
+
+    try {
+
+        const respuesta =
+                await fetch(
+                        "/admin/hoteles/guardar",
+                        {
+                            method: "POST",
+                            body: datos
+                        }
+                );
+
+
+        const resultado =
+                await respuesta.json();
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                    resultado.error
+                    || "No se pudo guardar."
+                    );
+        }
+
+
+        mostrarMensaje(
+                mensaje,
+                resultado.mensaje,
+                "success"
+                );
+
+
+        limpiarFormularioHotel();
+
+
+        await Promise.all([
+            cargarHoteles(),
+            cargarResumen()
+        ]);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        mostrarMensaje(
+                mensaje,
+                error.message
+                );
+    }
+}
+
+
+function editarHotel(idHotel) {
+
+    const hotel =
+            hotelesAdmin.find(
+                    h =>
+                h.idHotel === idHotel
+            );
+
+
+    if (!hotel) {
+        return;
+    }
+
+
+    document.getElementById(
+            "idHotel"
+            ).value =
+            hotel.idHotel;
+
+
+    document.getElementById(
+            "nombre"
+            ).value =
+            hotel.nombre ?? "";
+
+
+    document.getElementById(
+            "descripcion"
+            ).value =
+            hotel.descripcion ?? "";
+
+
+    document.getElementById(
+            "provincia"
+            ).value =
+            hotel.provincia ?? "";
+
+
+    document.getElementById(
+            "canton"
+            ).value =
+            hotel.canton ?? "";
+
+
+    document.getElementById(
+            "direccion"
+            ).value =
+            hotel.direccion ?? "";
+
+
+    document.getElementById(
+            "telefono"
+            ).value =
+            hotel.telefono ?? "";
+
+
+    document.getElementById(
+            "estado"
+            ).value =
+            hotel.estado ?? "ACTIVO";
+
+
+    document.getElementById(
+            "imagenPrincipal"
+            ).value = "";
+
+
+    document.getElementById(
+            "tituloFormulario"
+            ).textContent =
+            "Editar hotel";
+
+
+    document.getElementById(
+            "btnNuevoHotel"
+            )?.classList.remove(
+            "d-none"
+            );
+
+
+    document.getElementById(
+            "btnCancelarEdicion"
+            )?.classList.remove(
+            "d-none"
+            );
+
+
+    document.getElementById(
+            "formHotel"
+            ).scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+async function eliminarHotel(idHotel) {
+
+    const hotel =
+            hotelesAdmin.find(
+                    h =>
+                h.idHotel === idHotel
+            );
+
+
+    if (!hotel) {
+        return;
+    }
+
+
+    if (
+            !confirm(
+                    `¿Eliminar el hotel "${hotel.nombre}"?`
+                    )
+            ) {
+        return;
+    }
+
+
+    try {
+
+        const respuesta =
+                await fetch(
+                        `/admin/hoteles/eliminar/${idHotel}`,
+                        {
+                            method: "POST"
+                        }
+                );
+
+
+        const resultado =
+                await respuesta.json();
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                    resultado.error
+                    || "No se pudo eliminar."
+                    );
+        }
+
+
+        mostrarMensaje(
+                document.getElementById(
+                        "mensajeAdmin"
+                        ),
+                resultado.mensaje,
+                "success"
+                );
+
+
+        await Promise.all([
+            cargarHoteles(),
+            cargarResumen()
+        ]);
+
+
+    } catch (error) {
+
+        mostrarMensaje(
+                document.getElementById(
+                        "mensajeAdmin"
+                        ),
+                error.message
+                );
+    }
+}
+
+
+function limpiarFormularioHotel() {
+
+    const formulario =
+            document.getElementById(
+                    "formHotel"
+                    );
+
+
+    formulario?.reset();
+
+
+    document.getElementById(
+            "idHotel"
+            ).value = "";
+
+
+    document.getElementById(
+            "estado"
+            ).value =
+            "ACTIVO";
+
+
+    document.getElementById(
+            "tituloFormulario"
+            ).textContent =
+            "Registrar nuevo hotel";
+
+
+    document.getElementById(
+            "btnNuevoHotel"
+            )?.classList.add(
+            "d-none"
+            );
+
+
+    document.getElementById(
+            "btnCancelarEdicion"
+            )?.classList.add(
+            "d-none"
+            );
+}
+
+
+// ==================================================
+// TIPOS CUARTO
+// ==================================================
+
+async function cargarTiposCuarto() {
+
+    try {
+
+        const respuesta =
+                await fetch(
+                        "/admin/tipos-cuarto"
+                        );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                    "No se pudieron cargar los tipos."
+                    );
+        }
+
+
+        tiposCuartoAdmin =
+                await respuesta.json();
+
+
+        const select =
+                document.getElementById(
+                        "tipoCuarto"
+                        );
+
+
+        if (!select) {
+            return;
+        }
+
+
+        select.innerHTML = `
+            <option value="">
+                Seleccione un tipo
+            </option>
+
+            ${
+                tiposCuartoAdmin
+                .map(tipo => `
+                        <option
+                            value="${tipo.idTipoCuarto}">
+
+                            ${escaparHtml(
+                            tipo.nombreTipo
+                            )}
+
+                        </option>
+                    `)
+                .join("")
+                }
+        `;
+
 
     } catch (error) {
 
@@ -61,48 +854,138 @@ async function cargarResumen() {
     }
 }
 
-async function cargarHoteles() {
 
-    const tabla = document.getElementById("tablaHoteles");
+function llenarSelectHoteles() {
 
-    try {
+    const select =
+            document.getElementById(
+                    "hotelCuarto"
+                    );
 
-        const respuesta = await fetch("/admin/hoteles");
 
-        if (!respuesta.ok) {
-            throw new Error(
-                "No fue posible cargar los hoteles"
-            );
-        }
+    if (!select) {
+        return;
+    }
 
-        hotelesAdmin = await respuesta.json();
 
-        mostrarHoteles(hotelesAdmin);
+    const actual =
+            select.value;
 
-    } catch (error) {
 
-        tabla.innerHTML = `
-            <tr>
-                <td colspan="6"
-                    class="text-center text-danger py-5">
-                    ${escaparHtml(error.message)}
-                </td>
-            </tr>
-        `;
+    select.innerHTML = `
+        <option value="">
+            Seleccione un hotel
+        </option>
+
+        ${
+            hotelesAdmin
+            .map(hotel => `
+                    <option
+                        value="${hotel.idHotel}">
+
+                        ${escaparHtml(
+                        hotel.nombre
+                        )}
+
+                    </option>
+                `)
+            .join("")
+            }
+    `;
+
+
+    if (actual) {
+        select.value = actual;
     }
 }
 
-function mostrarHoteles(hoteles) {
 
-    const tabla = document.getElementById("tablaHoteles");
+// ==================================================
+// CUARTOS
+// ==================================================
 
-    if (!hoteles.length) {
+function administrarCuartos(idHotel) {
+
+    const select =
+            document.getElementById(
+                    "hotelCuarto"
+                    );
+
+
+    select.value =
+            idHotel;
+
+
+    cargarCuartos(
+            idHotel
+            );
+
+
+    document.getElementById(
+            "formCuarto"
+            ).scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+async function cargarCuartos(idHotel) {
+
+    try {
+
+        const respuesta =
+                await fetch(
+                        `/admin/hoteles/${idHotel}/cuartos`
+                        );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                    "No se pudieron cargar los cuartos."
+                    );
+        }
+
+
+        cuartosAdmin =
+                await respuesta.json();
+
+
+        mostrarCuartos(
+                cuartosAdmin
+                );
+
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+function mostrarCuartos(cuartos) {
+
+    const tabla =
+            document.getElementById(
+                    "tablaCuartos"
+                    );
+
+
+    if (!tabla) {
+        return;
+    }
+
+
+    if (!cuartos.length) {
 
         tabla.innerHTML = `
             <tr>
-                <td colspan="6"
-                    class="text-center py-5">
-                    No hay hoteles registrados.
+                <td
+                    colspan="6"
+                    class="text-center py-4">
+
+                    Este hotel no tiene cuartos.
+
                 </td>
             </tr>
         `;
@@ -110,431 +993,362 @@ function mostrarHoteles(hoteles) {
         return;
     }
 
-    tabla.innerHTML = hoteles.map(hotel => {
 
-        const estado = String(
-            hotel.estado ?? ""
-        ).toUpperCase();
+    tabla.innerHTML =
+            cuartos.map(cuarto => `
 
-        const claseEstado =
-            estado === "ACTIVO"
-                ? "text-bg-success"
-                : "text-bg-secondary";
-
-        const ubicacion = [
-            hotel.canton,
-            hotel.provincia
-        ]
-            .filter(Boolean)
-            .join(", ");
-
-        return `
             <tr>
 
                 <td>
-                    <div class="admin-hotel-cell">
-
-                        <img
-                            class="admin-hotel-thumb"
-                            src="${escaparHtml(
-                                rutaImagen(
-                                    hotel.imagenPrincipal
-                                )
-                            )}"
-                            alt="${escaparHtml(
-                                hotel.nombre
-                            )}">
-
-                        <div>
-                            <div class="admin-hotel-name">
-                                ${escaparHtml(hotel.nombre)}
-                            </div>
-
-                            <div class="admin-muted">
-                                #${hotel.idHotel}
-                            </div>
-                        </div>
-
-                    </div>
+                    #${cuarto.numeroCuarto}
                 </td>
 
                 <td>
                     ${escaparHtml(
-                        ubicacion || "Sin especificar"
-                    )}
-                </td>
-
-                <td>
-                    <i class="bi bi-star-fill text-warning"></i>
-                    ${Number(
-                        hotel.calificacionPromedio ?? 0
-                    ).toFixed(2)}
-                </td>
-
-                <td>
-                    ${hotel.cuartosDisponibles ?? 0}
-                </td>
-
-                <td>
-                    <span class="badge ${claseEstado}">
-                        ${escaparHtml(
-                            estado || "SIN ESTADO"
+                        cuarto.tipoCuarto || ""
                         )}
-                    </span>
                 </td>
 
                 <td>
-                    <div class="admin-actions">
+                    ${cuarto.cantidadPersonas}
+                </td>
 
-                        <button
-                            type="button"
-                            class="admin-icon-button"
-                            title="Editar"
-                            onclick="editarHotel(
-                                ${hotel.idHotel}
-                            )">
+                <td>
+                    ${formatoMoneda(
+                        cuarto.precioNoche
+                        )}
+                </td>
 
-                            <i class="bi bi-pencil"></i>
-                        </button>
+                <td>
+                    ${escaparHtml(
+                        cuarto.estado || ""
+                        )}
+                </td>
 
-                        <button
-                            type="button"
-                            class="admin-icon-button danger"
-                            title="Eliminar"
-                            onclick="eliminarHotel(
-                                ${hotel.idHotel}
-                            )">
+                <td class="text-end">
 
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <button
+                        type="button"
+                        class="admin-icon-button"
+                        onclick="
+                            editarCuarto(
+                                ${cuarto.idCuartoHotel}
+                            )
+                        ">
 
-                    </div>
+                        <i class="bi bi-pencil"></i>
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="
+                            admin-icon-button
+                            danger
+                        "
+                        onclick="
+                            eliminarCuarto(
+                                ${cuarto.idCuartoHotel}
+                            )
+                        ">
+
+                        <i class="bi bi-trash"></i>
+
+                    </button>
+
                 </td>
 
             </tr>
-        `;
-    }).join("");
+
+        `).join("");
 }
 
-function filtrarTabla(texto) {
 
-    const criterio = texto
-        .trim()
-        .toLowerCase();
-
-    if (!criterio) {
-        mostrarHoteles(hotelesAdmin);
-        return;
-    }
-
-    const filtrados = hotelesAdmin.filter(hotel => {
-
-        const contenido = [
-            hotel.nombre,
-            hotel.provincia,
-            hotel.canton,
-            hotel.estado
-        ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-        return contenido.includes(criterio);
-    });
-
-    mostrarHoteles(filtrados);
-}
-
-async function guardarHotel(evento) {
+async function guardarCuarto(evento) {
 
     evento.preventDefault();
 
-    const mensaje = document.getElementById(
-        "mensajeAdmin"
-    );
 
-    ocultarMensaje(mensaje);
+    const formulario =
+            document.getElementById(
+                    "formCuarto"
+                    );
 
-    const nombre = document.getElementById(
-        "nombre"
-    ).value.trim();
 
-    const estado = document.getElementById(
-        "estado"
-    ).value.trim();
+    const mensaje =
+            document.getElementById(
+                    "mensajeCuarto"
+                    );
 
-    const calificacion = Number(
-        document.getElementById(
-            "calificacionPromedio"
-        ).value || 0
-    );
 
-    const cuartos = Number(
-        document.getElementById(
-            "cuartosDisponibles"
-        ).value || 0
-    );
+    const datos =
+            new FormData(
+                    formulario
+                    );
 
-    if (!nombre) {
+
+    if (!datos.get("idCuartoHotel")) {
+
+        datos.delete(
+                "idCuartoHotel"
+                );
+    }
+
+
+    try {
+
+        const respuesta =
+                await fetch(
+                        "/admin/cuartos/guardar",
+                        {
+                            method: "POST",
+                            body: datos
+                        }
+                );
+
+
+        const resultado =
+                await respuesta.json();
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                    resultado.error
+                    || "No se pudo guardar el cuarto."
+                    );
+        }
+
+
+        const idHotel =
+                Number(
+                        document.getElementById(
+                                "hotelCuarto"
+                                ).value
+                        );
+
+
         mostrarMensaje(
-            mensaje,
-            "El nombre del hotel es obligatorio."
-        );
+                mensaje,
+                resultado.mensaje,
+                "success"
+                );
+
+
+        limpiarFormularioCuarto();
+
+
+        document.getElementById(
+                "hotelCuarto"
+                ).value =
+                idHotel;
+
+
+        await cargarCuartos(
+                idHotel
+                );
+
+
+        await Promise.all([
+            cargarHoteles(),
+            cargarResumen()
+        ]);
+
+
+    } catch (error) {
+
+        mostrarMensaje(
+                mensaje,
+                error.message
+                );
+    }
+}
+
+
+function editarCuarto(
+        idCuartoHotel
+        ) {
+
+    const cuarto =
+            cuartosAdmin.find(
+                    c =>
+                c.idCuartoHotel
+                        === idCuartoHotel
+            );
+
+
+    if (!cuarto) {
         return;
     }
 
-    if (!estado) {
-        mostrarMensaje(
-            mensaje,
-            "El estado del hotel es obligatorio."
-        );
-        return;
-    }
+
+    document.getElementById(
+            "idCuartoHotel"
+            ).value =
+            cuarto.idCuartoHotel;
+
+
+    document.getElementById(
+            "hotelCuarto"
+            ).value =
+            cuarto.idHotel;
+
+
+    document.getElementById(
+            "tipoCuarto"
+            ).value =
+            cuarto.idTipoCuarto;
+
+
+    document.getElementById(
+            "numeroCuarto"
+            ).value =
+            cuarto.numeroCuarto;
+
+
+    document.getElementById(
+            "cantidadPersonas"
+            ).value =
+            cuarto.cantidadPersonas;
+
+
+    document.getElementById(
+            "precioNoche"
+            ).value =
+            cuarto.precioNoche;
+
+
+    document.getElementById(
+            "estadoCuarto"
+            ).value =
+            cuarto.estado;
+
+
+    document.getElementById(
+            "tituloFormularioCuarto"
+            ).textContent =
+            "Editar cuarto";
+
+
+    document.getElementById(
+            "btnCancelarCuarto"
+            )?.classList.remove(
+            "d-none"
+            );
+}
+
+
+async function eliminarCuarto(
+        idCuartoHotel
+        ) {
 
     if (
-        calificacion < 0
-        || calificacion > 5
-    ) {
-
-        mostrarMensaje(
-            mensaje,
-            "La calificación debe estar entre 0 y 5."
-        );
-
+            !confirm(
+                    "¿Eliminar este cuarto?"
+                    )
+            ) {
         return;
     }
 
-    if (cuartos < 0) {
-
-        mostrarMensaje(
-            mensaje,
-            "Los cuartos disponibles no pueden ser negativos."
-        );
-
-        return;
-    }
-
-    const datos = new FormData(
-        document.getElementById("formHotel")
-    );
-
-    // Si estamos creando, no enviamos un idHotel vacío.
-    if (!datos.get("idHotel")) {
-        datos.delete("idHotel");
-    }
 
     try {
 
-        const respuesta = await fetch(
-            "/admin/hoteles/guardar",
-            {
-                method: "POST",
-                body: datos
-            }
-        );
+        const respuesta =
+                await fetch(
+                        `/admin/cuartos/eliminar/${idCuartoHotel}`,
+                        {
+                            method: "POST"
+                        }
+                );
 
-        const resultado = await respuesta.json();
+
+        const resultado =
+                await respuesta.json();
+
 
         if (!respuesta.ok) {
+
             throw new Error(
-                resultado.error
-                || "No fue posible guardar el hotel"
-            );
+                    resultado.error
+                    );
         }
 
-        mostrarMensaje(
-            mensaje,
-            resultado.mensaje,
-            "success"
-        );
 
-        limpiarFormulario();
+        const idHotel =
+                Number(
+                        document.getElementById(
+                                "hotelCuarto"
+                                ).value
+                        );
+
+
+        await cargarCuartos(
+                idHotel
+                );
+
 
         await Promise.all([
             cargarHoteles(),
             cargarResumen()
         ]);
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
 
     } catch (error) {
 
         mostrarMensaje(
-            mensaje,
-            error.message
-        );
+                document.getElementById(
+                        "mensajeCuarto"
+                        ),
+                error.message
+                );
     }
 }
 
-function editarHotel(idHotel) {
 
-    const hotel = hotelesAdmin.find(
-        item => item.idHotel === idHotel
-    );
+function limpiarFormularioCuarto() {
 
-    if (!hotel) return;
+    const formulario =
+            document.getElementById(
+                    "formCuarto"
+                    );
 
-    document.getElementById(
-        "idHotel"
-    ).value = hotel.idHotel;
 
-    document.getElementById(
-        "nombre"
-    ).value = hotel.nombre ?? "";
+    const idHotel =
+            document.getElementById(
+                    "hotelCuarto"
+                    ).value;
 
-    document.getElementById(
-        "descripcion"
-    ).value = hotel.descripcion ?? "";
+
+    formulario?.reset();
+
 
     document.getElementById(
-        "imagenPrincipal"
-    ).value = hotel.imagenPrincipal ?? "";
+            "idCuartoHotel"
+            ).value = "";
+
 
     document.getElementById(
-        "provincia"
-    ).value = hotel.provincia ?? "";
+            "hotelCuarto"
+            ).value =
+            idHotel;
+
 
     document.getElementById(
-        "canton"
-    ).value = hotel.canton ?? "";
+            "estadoCuarto"
+            ).value =
+            "DISPONIBLE";
+
 
     document.getElementById(
-        "direccion"
-    ).value = hotel.direccion ?? "";
+            "tituloFormularioCuarto"
+            ).textContent =
+            "Registrar cuarto";
+
 
     document.getElementById(
-        "telefono"
-    ).value = hotel.telefono ?? "";
-
-    document.getElementById(
-        "calificacionPromedio"
-    ).value =
-        hotel.calificacionPromedio ?? 0;
-
-    document.getElementById(
-        "cuartosDisponibles"
-    ).value =
-        hotel.cuartosDisponibles ?? 0;
-
-    document.getElementById(
-        "estado"
-    ).value =
-        hotel.estado ?? "ACTIVO";
-
-    document.getElementById(
-        "tituloFormulario"
-    ).textContent = "Editar hotel";
-
-    document.getElementById(
-        "btnNuevoHotel"
-    ).classList.remove("d-none");
-
-    document.getElementById(
-        "btnCancelarEdicion"
-    ).classList.remove("d-none");
-
-    document.getElementById(
-        "formHotel"
-    ).scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
-
-async function eliminarHotel(idHotel) {
-
-    const hotel = hotelesAdmin.find(
-        item => item.idHotel === idHotel
-    );
-
-    if (!hotel) return;
-
-    const confirmar = window.confirm(
-        `¿Desea eliminar el hotel "${hotel.nombre}"?`
-    );
-
-    if (!confirmar) return;
-
-    const mensaje = document.getElementById(
-        "mensajeAdmin"
-    );
-
-    try {
-
-        const respuesta = await fetch(
-            `/admin/hoteles/eliminar/${idHotel}`,
-            {
-                method: "POST"
-            }
-        );
-
-        const resultado = await respuesta.json();
-
-        if (!respuesta.ok) {
-            throw new Error(
-                resultado.error
-                || "No fue posible eliminar el hotel"
+            "btnCancelarCuarto"
+            )?.classList.add(
+            "d-none"
             );
-        }
-
-        mostrarMensaje(
-            mensaje,
-            resultado.mensaje,
-            "success"
-        );
-
-        limpiarFormulario();
-
-        await Promise.all([
-            cargarHoteles(),
-            cargarResumen()
-        ]);
-
-    } catch (error) {
-
-        mostrarMensaje(
-            mensaje,
-            error.message
-        );
-    }
-}
-
-function limpiarFormulario() {
-
-    const form = document.getElementById(
-        "formHotel"
-    );
-
-    form.reset();
-
-    document.getElementById(
-        "idHotel"
-    ).value = "";
-
-    document.getElementById(
-        "calificacionPromedio"
-    ).value = "0.00";
-
-    document.getElementById(
-        "cuartosDisponibles"
-    ).value = "0";
-
-    document.getElementById(
-        "estado"
-    ).value = "ACTIVO";
-
-    document.getElementById(
-        "tituloFormulario"
-    ).textContent = "Registrar nuevo hotel";
-
-    document.getElementById(
-        "btnNuevoHotel"
-    ).classList.add("d-none");
-
-    document.getElementById(
-        "btnCancelarEdicion"
-    ).classList.add("d-none");
 }

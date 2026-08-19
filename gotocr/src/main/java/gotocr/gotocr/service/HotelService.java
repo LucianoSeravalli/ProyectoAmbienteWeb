@@ -2,6 +2,7 @@ package gotocr.gotocr.service;
 
 import gotocr.gotocr.domain.Hotel;
 import gotocr.gotocr.repository.HotelRepository;
+import gotocr.gotocr.service.util.ImagenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +68,7 @@ public class HotelService {
     public void insertarHotel(
             String nombre,
             String descripcion,
-            String imagenPrincipal,
+            MultipartFile archivo,
             String provincia,
             String canton,
             String direccion,
@@ -75,25 +77,54 @@ public class HotelService {
             Integer cuartosDisponibles,
             String estado) {
 
-        validarDatosHotel(
+        validarTexto(
                 nombre,
-                calificacionPromedio,
-                cuartosDisponibles,
-                estado
+                "El nombre del hotel es obligatorio"
         );
+
+        validarTexto(
+                estado,
+                "El estado es obligatorio"
+        );
+
+        if (calificacionPromedio == null) {
+            calificacionPromedio
+                    = BigDecimal.ZERO;
+        }
+
+        if (cuartosDisponibles == null) {
+            cuartosDisponibles = 0;
+        }
+
+        byte[] imagen = null;
+        String tipoImagen = null;
+        if (archivo != null && !archivo.isEmpty()) {
+
+            ImagenUtil.validar(archivo);
+            imagen = ImagenUtil.obtenerBytes(archivo);
+            tipoImagen = archivo.getContentType();
+        }
 
         hotelRepository.insertarHotel(
                 nombre.trim(),
-                limpiarOpcional(descripcion),
-                limpiarOpcional(imagenPrincipal),
-                limpiarOpcional(provincia),
-                limpiarOpcional(canton),
-                limpiarOpcional(direccion),
-                limpiarOpcional(telefono),
+                normalizar(descripcion),
+                imagen,
+                tipoImagen,
+                normalizar(provincia),
+                normalizar(canton),
+                normalizar(direccion),
+                normalizar(telefono),
                 calificacionPromedio,
                 cuartosDisponibles,
                 estado.trim()
         );
+    }
+
+    private String normalizar(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+        return valor.trim();
     }
 
     @Transactional
@@ -101,7 +132,7 @@ public class HotelService {
             Integer idHotel,
             String nombre,
             String descripcion,
-            String imagenPrincipal,
+            MultipartFile imagenPrincipal,
             String provincia,
             String canton,
             String direccion,
@@ -125,11 +156,29 @@ public class HotelService {
                 estado
         );
 
+        byte[] imagenBytes = null;
+        String tipoImagen = null;
+
+        if (imagenPrincipal != null
+                && !imagenPrincipal.isEmpty()) {
+
+            ImagenUtil.validar(imagenPrincipal);
+
+            imagenBytes
+                    = ImagenUtil.obtenerBytes(
+                            imagenPrincipal
+                    );
+
+            tipoImagen
+                    = imagenPrincipal.getContentType();
+        }
+
         hotelRepository.actualizarHotel(
                 idHotel,
                 nombre.trim(),
                 limpiarOpcional(descripcion),
-                limpiarOpcional(imagenPrincipal),
+                imagenBytes,
+                tipoImagen,
                 limpiarOpcional(provincia),
                 limpiarOpcional(canton),
                 limpiarOpcional(direccion),

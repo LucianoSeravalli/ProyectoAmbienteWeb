@@ -1,6 +1,4 @@
-
 package gotocr.gotocr.repository;
-
 
 import gotocr.gotocr.domain.ImagenCuarto;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.Modifying;
 
 public interface ImagenCuartoRepository extends JpaRepository<ImagenCuarto, Integer> {
 
@@ -34,7 +34,6 @@ public interface ImagenCuartoRepository extends JpaRepository<ImagenCuarto, Inte
     );
 
     // CONSULTAS
-
     @Query("""
         SELECT i FROM ImagenCuarto i
         WHERE i.cuartoHotel.idCuartoHotel = :idCuartoHotel
@@ -42,4 +41,24 @@ public interface ImagenCuartoRepository extends JpaRepository<ImagenCuarto, Inte
     List<ImagenCuarto> buscarPorCuarto(
             @Param("idCuartoHotel") Integer idCuartoHotel
     );
+
+    @Query("""
+           SELECT i
+           FROM ImagenCuarto i
+           WHERE i.cuartoHotel.idCuartoHotel = :idCuartoHotel
+           ORDER BY i.idImagen
+           """)
+    Optional<ImagenCuarto> buscarPrimeraPorCuarto(
+            @Param("idCuartoHotel") Integer idCuartoHotel
+    );
+
+    @Modifying
+    @Query("""
+           DELETE FROM ImagenCuarto i
+           WHERE i.cuartoHotel.idCuartoHotel = :idCuartoHotel
+           """)
+    void eliminarPorCuarto(
+            @Param("idCuartoHotel") Integer idCuartoHotel
+    );
+
 }

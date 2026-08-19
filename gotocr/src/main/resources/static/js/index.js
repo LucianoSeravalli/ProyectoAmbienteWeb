@@ -21,7 +21,8 @@ async function cargarHotelesDestacados() {
             <div class="col-lg-4 col-md-6">
                 <div class="gcr-card h-100">
                     <img
-                        src="${escaparHtml(rutaImagen(hotel.imagenPrincipal))}"
+                        src="${rutaImagenHotel(hotel.idHotel, hotel.tieneImagen)}"
+                        onerror="this.onerror=null; this.src='/img/hotel-default.jpg';"
                         class="gcr-card-img"
                         alt="${escaparHtml(hotel.nombre)}">
                     <div class="p-4">

@@ -1,13 +1,11 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package gotocr.gotocr.service;
 
 import gotocr.gotocr.domain.ResenaHotel;
+import gotocr.gotocr.repository.HotelRepository;
 import gotocr.gotocr.repository.ResenaHotelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,135 +16,212 @@ public class ResenaHotelService {
 
     private final ResenaHotelRepository resenaHotelRepository;
 
-    public List<ResenaHotel> listarResenas() {
-        return resenaHotelRepository.listarResenas();
+    private final HotelRepository hotelRepository;
+
+    public List<ResenaHotel> buscarPorHotel(
+            Integer idHotel) {
+
+        return resenaHotelRepository
+                .buscarPorHotel(idHotel);
     }
 
-    public Optional<ResenaHotel> buscarPorId(Integer idResena) {
+    public Optional<ResenaHotel> buscarPorId(
+            Integer idResena) {
 
-        validarId(idResena);
-
-        return resenaHotelRepository.buscarPorId(idResena);
+        return resenaHotelRepository
+                .findById(idResena);
     }
 
-    public List<ResenaHotel> buscarPorHotel(Integer idHotel) {
+    public Optional<ResenaHotel> buscarPorClienteYHotel(
+            Integer idCliente,
+            Integer idHotel) {
 
-        validarId(idHotel);
-
-        return resenaHotelRepository.buscarPorHotel(idHotel);
+        return resenaHotelRepository
+                .buscarPorClienteYHotel(
+                        idCliente,
+                        idHotel
+                );
     }
 
-    public List<ResenaHotel> buscarPorCliente(Integer idCliente) {
+    @Transactional
+    public void guardarResena(
+            Integer idCliente,
+            Integer idHotel,
+            Integer calificacion,
+            String comentario) {
 
-        validarId(idCliente);
-
-        return resenaHotelRepository.buscarPorCliente(idCliente);
-    }
-
-    public List<ResenaHotel> buscarPorCalificacion(
-            Integer calificacion) {
-
-        validarCalificacion(calificacion);
-
-        return resenaHotelRepository.buscarPorCalificacion(
+        validarDatos(
+                idCliente,
+                idHotel,
                 calificacion
         );
+
+        Optional<ResenaHotel> existente
+                = resenaHotelRepository
+                        .buscarPorClienteYHotel(
+                                idCliente,
+                                idHotel
+                        );
+
+
+        /*
+         * Para simplificar:
+         * un cliente tiene una reseña por hotel.
+         *
+         * Si ya existe, la actualizamos.
+         */
+        if (existente.isPresent()) {
+
+            resenaHotelRepository
+                    .actualizarResena(
+                            existente.get()
+                                    .getIdResena(),
+                            calificacion,
+                            limpiar(comentario)
+                    );
+
+        } else {
+
+            resenaHotelRepository
+                    .insertarResena(
+                            idCliente,
+                            idHotel,
+                            calificacion,
+                            limpiar(comentario)
+                    );
+        }
+
+        hotelRepository
+                .recalcularCalificacionHotel(
+                        idHotel
+                );
     }
 
-    public void insertarResenaHotel(
-            Integer idCliente,
-            Integer idHotel,
-            Integer calificacion,
-            String comentario) {
-
-        validarId(idCliente);
-        validarId(idHotel);
-        validarCalificacion(calificacion);
-
-        validarTexto(
-                comentario,
-                "El comentario es obligatorio"
-        );
-
-        resenaHotelRepository.insertarResenaHotel(
-                idCliente,
-                idHotel,
-                calificacion,
-                comentario.trim()
-        );
-    }
-
-    public void actualizarResenaHotel(
+    @Transactional
+    public void eliminarResena(
             Integer idResena,
+            Integer idCliente) {
+
+        ResenaHotel resena
+                = resenaHotelRepository
+                        .findById(idResena)
+                        .orElseThrow(()
+                                -> new IllegalArgumentException(
+                                "La reseña no existe."
+                        )
+                        );
+
+        if (resena.getCliente() == null
+                || !resena.getCliente()
+                        .getIdCliente()
+                        .equals(idCliente)) {
+
+            throw new IllegalArgumentException(
+                    "No puede eliminar esta reseña."
+            );
+        }
+
+        Integer idHotel
+                = resena.getHotel()
+                        .getIdHotel();
+
+        resenaHotelRepository
+                .eliminarResena(
+                        idResena
+                );
+
+        hotelRepository
+                .recalcularCalificacionHotel(
+                        idHotel
+                );
+    }
+
+    private void validarDatos(
             Integer idCliente,
             Integer idHotel,
-            Integer calificacion,
-            String comentario) {
+            Integer calificacion) {
 
-        validarId(idResena);
-        validarId(idCliente);
-        validarId(idHotel);
+        if (idCliente == null
+                || idCliente <= 0) {
 
-        if (resenaHotelRepository.buscarPorId(idResena).isEmpty()) {
             throw new IllegalArgumentException(
-                    "No existe la reseña indicada"
+                    "Cliente inválido."
             );
         }
 
-        validarCalificacion(calificacion);
+        if (idHotel == null
+                || idHotel <= 0) {
 
-        validarTexto(
-                comentario,
-                "El comentario es obligatorio"
+            throw new IllegalArgumentException(
+                    "Hotel inválido."
+            );
+        }
+
+        if (calificacion == null
+                || calificacion < 1
+                || calificacion > 5) {
+
+            throw new IllegalArgumentException(
+                    "La calificación debe estar entre 1 y 5."
+            );
+        }
+    }
+
+    private String limpiar(
+            String valor) {
+
+        if (valor == null
+                || valor.trim().isEmpty()) {
+
+            return null;
+        }
+
+        return valor.trim();
+    }
+    
+    @Transactional
+public void insertarResenaHotel(
+        Integer idCliente,
+        Integer idHotel,
+        Integer calificacion,
+        String comentario) {
+
+    if (idCliente == null || idCliente <= 0) {
+        throw new IllegalArgumentException(
+                "El cliente es obligatorio."
         );
+    }
 
-        resenaHotelRepository.actualizarResenaHotel(
-                idResena,
-                idCliente,
-                idHotel,
-                calificacion,
-                comentario.trim()
+    if (idHotel == null || idHotel <= 0) {
+        throw new IllegalArgumentException(
+                "El hotel es obligatorio."
         );
     }
 
-    public void eliminarResenaHotel(Integer idResena) {
+    if (calificacion == null
+            || calificacion < 1
+            || calificacion > 5) {
 
-        validarId(idResena);
-
-        if (resenaHotelRepository.buscarPorId(idResena).isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No existe la reseña indicada"
-            );
-        }
-
-        resenaHotelRepository.eliminarResenaHotel(idResena);
+        throw new IllegalArgumentException(
+                "La calificación debe estar entre 1 y 5."
+        );
     }
 
-    private void validarCalificacion(Integer calificacion) {
+    String comentarioLimpio =
+            comentario == null
+                    || comentario.trim().isEmpty()
+                    ? null
+                    : comentario.trim();
 
-        if (calificacion == null ||
-                calificacion < 1 ||
-                calificacion > 5) {
+    resenaHotelRepository.insertarResenaHotel(
+            idCliente,
+            idHotel,
+            calificacion,
+            comentarioLimpio
+    );
 
-            throw new IllegalArgumentException(
-                    "La calificación debe estar entre 1 y 5"
-            );
-        }
-    }
-
-    private void validarId(Integer id) {
-
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                    "El ID debe ser mayor que cero"
-            );
-        }
-    }
-
-    private void validarTexto(String texto, String mensaje) {
-
-        if (texto == null || texto.trim().isEmpty()) {
-            throw new IllegalArgumentException(mensaje);
-        }
-    }
+    hotelRepository.recalcularCalificacionHotel(
+            idHotel
+    );
+}
 }

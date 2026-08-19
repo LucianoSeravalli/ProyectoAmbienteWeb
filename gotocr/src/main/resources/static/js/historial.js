@@ -34,9 +34,19 @@ async function cargarHistorial() {
         document.getElementById("historialCorreoCliente").textContent =
             datos.cliente.correo;
 
-        if (datos.cliente.imagenPerfil) {
-            document.getElementById("historialImagenPerfil").src =
-                rutaImagen(datos.cliente.imagenPerfil);
+        const imagenPerfil =
+            document.getElementById("historialImagenPerfil");
+
+        if (imagenPerfil) {
+            imagenPerfil.src = rutaImagenPerfil(
+                datos.cliente.idCliente,
+                datos.cliente.tieneImagenPerfil
+            );
+
+            imagenPerfil.onerror = function () {
+                this.onerror = null;
+                this.src = "/img/perfil-default.png";
+            };
         }
 
         reservasCliente = datos.reservas || [];
@@ -85,6 +95,11 @@ function mostrarReservasPorEstado(estado) {
 
     contenedor.innerHTML = reservas.map(reserva => {
         const estado = (reserva.estadoReserva || "").toUpperCase();
+
+        const imagenHotel = rutaImagenHotel(
+            reserva.idHotel,
+            reserva.tieneImagenHotel
+        );
         const clase = estado === "CONFIRMADA"
             ? "text-bg-warning"
             : estado === "COMPLETADA"
@@ -95,8 +110,9 @@ function mostrarReservasPorEstado(estado) {
 
         return `
             <div class="gcr-reservation-card mb-3 ${estado === "CANCELADA" ? "is-cancelled" : ""}">
-                <img src="${escaparHtml(rutaImagen(reserva.imagenHotel))}"
-                     alt="${escaparHtml(reserva.hotel)}">
+                <img src="${imagenHotel}"
+                     alt="${escaparHtml(reserva.hotel)}"
+                     onerror="this.onerror=null; this.src='/img/hotel-default.jpg';">
 
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between flex-wrap gap-2">

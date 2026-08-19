@@ -1,4 +1,5 @@
 package gotocr.gotocr.service;
+
 import gotocr.gotocr.domain.Cliente;
 import gotocr.gotocr.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,8 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
 
-    private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern EMAIL_PATTERN
+            = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
     public List<Cliente> listarClientes() {
         return clienteRepository.listarClientes();
@@ -47,19 +48,37 @@ public class ClienteService {
             String apellido,
             String correo,
             String contrasena,
-            String imagenPerfil,
+            byte[] imagenPerfil,
+            String tipoImagenPerfil,
             String tokenConfirmacion,
             Boolean correoVerificado) {
 
         validarId(idRol);
 
-        validarTexto(nombre, "El nombre es obligatorio");
-        validarTexto(apellido, "El apellido es obligatorio");
-        validarCorreo(correo);
-        validarTexto(contrasena, "La contraseña es obligatoria");
+        validarTexto(
+                nombre,
+                "El nombre es obligatorio"
+        );
 
-        if (clienteRepository.buscarPorCorreo(correo.trim()).isPresent()) {
-            throw new IllegalArgumentException("Ya existe un cliente registrado con ese correo");
+        validarTexto(
+                apellido,
+                "El apellido es obligatorio"
+        );
+
+        validarCorreo(correo);
+
+        validarTexto(
+                contrasena,
+                "La contraseña es obligatoria"
+        );
+
+        if (clienteRepository
+                .buscarPorCorreo(correo.trim())
+                .isPresent()) {
+
+            throw new IllegalArgumentException(
+                    "Ya existe un cliente registrado con ese correo"
+            );
         }
 
         clienteRepository.insertarCliente(
@@ -69,8 +88,11 @@ public class ClienteService {
                 correo.trim(),
                 contrasena,
                 imagenPerfil,
+                tipoImagenPerfil,
                 tokenConfirmacion,
-                correoVerificado
+                correoVerificado != null
+                        ? correoVerificado
+                        : false
         );
     }
 
@@ -81,7 +103,8 @@ public class ClienteService {
             String apellido,
             String correo,
             String contrasena,
-            String imagenPerfil,
+            byte[] imagenPerfil,
+            String tipoImagenPerfil,
             String tokenConfirmacion,
             Boolean correoVerificado) {
 
@@ -107,6 +130,7 @@ public class ClienteService {
                 correo.trim(),
                 contrasena,
                 imagenPerfil,
+                tipoImagenPerfil,
                 tokenConfirmacion,
                 correoVerificado
         );

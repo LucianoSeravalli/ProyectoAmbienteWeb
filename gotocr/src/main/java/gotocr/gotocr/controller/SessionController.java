@@ -22,36 +22,82 @@ public class SessionController {
 
     @GetMapping("/sesion/datos")
     @ResponseBody
-    public ResponseEntity<?> obtenerSesion(HttpSession session) {
+    public ResponseEntity<?> obtenerSesion(
+            HttpSession session) {
 
-        Integer idCliente = (Integer) session.getAttribute("idCliente");
-        Integer idRol = (Integer) session.getAttribute("idRol");
+        Integer idCliente
+                = (Integer) session.getAttribute(
+                        "idCliente"
+                );
+
+        Integer idRol
+                = (Integer) session.getAttribute(
+                        "idRol"
+                );
 
         if (idCliente == null) {
+
             return ResponseEntity.ok(
                     Map.of(
-                            "autenticado", false
+                            "autenticado",
+                            false
                     )
             );
         }
 
-        Cliente cliente = clienteService.buscarPorId(idCliente)
-                .orElseThrow(()
-                        -> new IllegalArgumentException(
-                        "Cliente no encontrado"
-                )
-                );
+        Cliente cliente
+                = clienteService
+                        .buscarPorId(idCliente)
+                        .orElse(null);
 
-        Map<String, Object> datos = new HashMap<>();
+        if (cliente == null) {
 
-        datos.put("autenticado", true);
-        datos.put("idCliente", cliente.getIdCliente());
-        datos.put("idRol", idRol);
-        datos.put("esAdmin", idRol != null && idRol == 2);
+            return ResponseEntity.ok(
+                    Map.of(
+                            "autenticado",
+                            false
+                    )
+            );
+        }
 
-        datos.put("nombre", cliente.getNombre());
-        datos.put("apellido", cliente.getApellido());
-        datos.put("imagenPerfil", cliente.getImagenPerfil());
+        Map<String, Object> datos
+                = new HashMap<>();
+
+        datos.put(
+                "autenticado",
+                true
+        );
+
+        datos.put(
+                "idCliente",
+                cliente.getIdCliente()
+        );
+
+        datos.put(
+                "idRol",
+                idRol
+        );
+
+        datos.put(
+                "esAdmin",
+                idRol != null && idRol == 2
+        );
+
+        datos.put(
+                "nombre",
+                cliente.getNombre()
+        );
+
+        datos.put(
+                "apellido",
+                cliente.getApellido()
+        );
+
+        datos.put(
+                "tieneImagenPerfil",
+                cliente.getImagenPerfil() != null
+                && cliente.getImagenPerfil().length > 0
+        );
 
         return ResponseEntity.ok(datos);
     }
